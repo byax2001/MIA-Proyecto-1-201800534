@@ -25,8 +25,8 @@ typedef struct
 
     string Comando = "";
     int tamano = 0;
-    char ajuste_particion = 'f';
-    string dimensional = "m";
+    char ajuste_particion = 'w';
+    string dimensional = "k";
     string path;     // path
     int opcionFdisk; // crear particion, aumentar tamañod de esta o eliminar
     string id;

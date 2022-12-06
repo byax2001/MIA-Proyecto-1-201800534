@@ -11,8 +11,9 @@ void Comandos::ejecutarInst(Parametros p)
     { // Se identifica el comando
         CreateDisk(p.tamano, p.ajuste_particion, p.dimensional, p.path);
     }
-    else if (p.Comando == "rep")
+    else if (p.Comando == "fidsk")
     {
+        
         ShowDisco();
     }
     else if (p.Comando == "rmdisk")
@@ -28,8 +29,14 @@ void Comandos::ejecutarInst(Parametros p)
 
 void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
 {
+    //-s: tamaño del disco
+    //-f:bf,ff,wf
+    //-u: unidad
+    //-path: direccion 
+
+
     int size_file = tamano;
-    char bloque[1024];
+    char bloque[1024]; //el tamaño de este array lleno es igual a un k
     for (int i = 0; i < 1024; i++)
     {
         bloque[i] = '\0';
@@ -82,13 +89,17 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
         fwrite(&bloque, 1024, 1, archivo_bin);
         limite++;
     }
+    //tamaño del diso
     disco.mbr_tamano = size_file * 1024;
+    //fecha de creacion
     disco.mbr_fecha_creacion = time(0);
     //-------------------------------------
     int numrand = num_aleatorio();
+    //id unico al crear disco
     id_signature.push_back(numrand);
     disco.mbr_dsk_signature = numrand;
     //-------------------------------------
+    //tipo de particiones
     disco.dsk_fit = t_particion;
 
     fseek(archivo_bin, 0, SEEK_SET);
@@ -96,15 +107,7 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     fclose(archivo_bin);
 }
 
-void Comandos::ShowDisco()
-{
-    FILE *archivo_bin;
-    archivo_bin = fopen("Disco.dk", "ab+");
-    fseek(archivo_bin, 0, SEEK_SET);
-    fread(&disco2, sizeof(disco2), 1, archivo_bin);
-    mostrar(disco2);
-    fclose(archivo_bin);
-}
+
 
 void Comandos::mostrar(DiscoMBR disco1)
 {
@@ -147,6 +150,7 @@ void Comandos::DeleteFile(string path)
 
 void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, char tparticion, char tAjuste, char id[])
 {
+    //OpFdisk : si se va a añadir o eliminar una particion 
     //-s tamaño
     //-u unidad
     // path path
@@ -154,6 +158,7 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
     //-f mejor ajuste
     // delete borrar particion
     // add aumentar tamño de una particion
+    // name
 
     // revisar que el disco a leer exista
     FILE *archivo_bin;
@@ -161,23 +166,24 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
     if (archivo_bin != NULL)
     {
         fread(&disco2, sizeof(disco2), 1, archivo_bin);
+        //Crear Particion 
         if (OpFdisk == 0)
         {
             if(strcmp(disco2.mbr_partition_1.part_name,id)==0){
                 //nombre ya existe error
-                cout<<"Ya existe una variable con este id"<<endl;
+                cout<<"Ya existe una particion con este id"<<endl;
                 return;
             }else if(strcmp(disco2.mbr_partition_2.part_name,id)==0){
                 //nombre ya existe error
-                cout<<"Ya existe una variable con este id"<<endl;
+                cout<<"Ya existe una particion con este id"<<endl;
                 return;
             } else if(strcmp(disco2.mbr_partition_3.part_name,id)==0){
                 //nombre ya existe error
-                cout<<"Ya existe una variable con este id"<<endl;
+                cout<<"Ya existe una particion con este id"<<endl;
                 return;
             } else if(strcmp(disco2.mbr_partition_4.part_name,id)==0){
                 //nombre ya existe error
-                cout<<"Ya existe una variable con este id"<<endl;
+                cout<<"Ya existe una particion con este id"<<endl;
                 return;
             }
             partition_.part_status = 'd'; // desactivado
@@ -222,11 +228,12 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
             fwrite(&disco2, sizeof(disco2), 1, archivo_bin);
             fclose(archivo_bin);
             cout << "Particion creada" << endl;
-        }else if (OpFdisk == 1){ //add
+        }else if (OpFdisk == 1){ // Opcion ADD
             // para que otra variable tome el valor de otra y que esta al modificarle se modifiquen las dos
             // hacer esto:
-            // int varOriginal=0
-            // int *varAux= &varOriginal;        //*varAux retorna el valor de var Original y tambien la modifica
+            //  Punteros:
+            //  int varOriginal=0
+            //  int *varAux= &varOriginal;        //*varAux retorna el valor de var Original y tambien la modifica
             //  *varAux=3;
             //  varOriginal ahora tendra el valor de 3
             Partition *aux;
@@ -248,10 +255,10 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
                 (*aux).part_s=(*aux).part_s+tamano; //se esta modificando el struct original para referenciarse en algun atributo usar parentesis (*id).atributo
             }
         
-        }else if (OpFdisk>1){//delete
+        }else if (OpFdisk>1){//DELETE 
              if(strcmp(disco2.mbr_partition_1.part_name,id)==0){
                 //size tiene el tamaño en bytes (8 bits)
-                int tam=disco2.mbr_partition_1.part_s;
+                int tam=disco2.mbr_partition_1.part_s; //El tamaño de las particiones estara en bytes
                 int inicio=disco2.mbr_partition_1.part_start;
                 fseek(archivo_bin, inicio, SEEK_SET);
                 char aux='\0';
@@ -308,8 +315,7 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
 
              }
         }
-    }
-    else
+    }else
     {
         cout << "El archivo a usar con fdisk no existe" << endl;
     }
