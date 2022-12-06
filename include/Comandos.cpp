@@ -1,4 +1,4 @@
-#include "Comandos.h"
+#include "../lib/Comandos.h"
 
 Comandos::Comandos()
 {
@@ -9,12 +9,13 @@ void Comandos::ejecutarInst(Parametros p)
 {
     if (p.Comando == "mkdisk")
     { // Se identifica el comando
+        
         CreateDisk(p.tamano, p.ajuste_particion, p.dimensional, p.path);
     }
     else if (p.Comando == "fidsk")
     {
         
-        ShowDisco();
+        cout<<"hola";
     }
     else if (p.Comando == "rmdisk")
     {
@@ -33,7 +34,7 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     //-f:bf,ff,wf
     //-u: unidad
     //-path: direccion 
-
+    Structs::DiscoMBR disco;
 
     int size_file = tamano;
     char bloque[1024]; //el tamaño de este array lleno es igual a un k
@@ -59,23 +60,10 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
         // creo directorio
         int indexDoc = path.rfind("/");
         string dir = path.substr(0, indexDoc);
-        auto status = fs::create_directory(dir); // marca error pero si funciona, para quitarlo hay que
-                                                 // hacer esto cada vez que se inicie el vscode
-        /*Ctrl + Shift + P then select C/C++:Edit Configurations (JSON)
-         Adjust the content for cStandard and cppStandard:
-         "cStandard": "gnu17",
-         "cppStandard": "gnu++17",*/
-        if (status)
-        {
-            printf("Directorio creado\n");
-            archivo_bin = fopen(path.c_str(), "w");
-            fclose(archivo_bin);
-        }
-        else
-        {
-            printf("No se pudo crear el directorio\n");
-            exit(1);
-        }
+        string comando1 = "mkdir -p \"" + dir + "\"";
+        string comando2 = "rmdir \"" + dir + "\"";
+        system(comando1.c_str());
+        system(comando2.c_str());
     }
     else
     {
@@ -96,7 +84,7 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     //-------------------------------------
     int numrand = num_aleatorio();
     //id unico al crear disco
-    id_signature.push_back(numrand);
+    
     disco.mbr_dsk_signature = numrand;
     //-------------------------------------
     //tipo de particiones
@@ -109,29 +97,11 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
 
 
 
-void Comandos::mostrar(DiscoMBR disco1)
-{
-    if (disco1.mbr_dsk_signature != 0 && disco1.mbr_tamano != 0)
-    {
-        cout << "Tamanio: " << disco1.mbr_tamano << " bytes" << endl;
-        char *dt = ctime(&disco1.mbr_fecha_creacion);
-        cout << "Fecha de creacion: " << dt;
-        cout << "Asignatura: " << disco1.mbr_dsk_signature << endl;
-    }
-    else
-    {
-        cout << "No se ha creado ningun disco" << endl;
-    }
-}
-
 int Comandos::num_aleatorio()
 { // numero aleatorio irrepetible
-    int numrand = rand() % 1500;
-    if (find(id_signature.begin(), id_signature.end(), numrand) != id_signature.end())
-    { // id signature es un vector que almacena todos los id's usados, se encuentra en el archivo .h
-        numrand = num_aleatorio();
-    }
-    return numrand;
+    
+
+    return 2;
 }
 
 void Comandos::DeleteFile(string path)
@@ -159,7 +129,8 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
     // delete borrar particion
     // add aumentar tamño de una particion
     // name
-
+    Structs::DiscoMBR disco,disco2;
+    Structs::Partition partition_,partmod,*aux,vacioP;
     // revisar que el disco a leer exista
     FILE *archivo_bin;
     archivo_bin = fopen(path.c_str(), "rb+");
@@ -190,12 +161,11 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
             partition_.part_type = tparticion;
             partition_.part_fit = tAjuste; // bestfit firsfit  worsfit
             strcpy(partition_.part_name,id);//pasar el contenido de una variable a otra (destino, origen)
-            Partition partmod;
 
             if (disco2.mbr_partition_1.part_status == '\0')
             {
                 int inicio = sizeof(disco2) + 1;
-                int tamano = sizeof(Partition);
+                int tamano = sizeof(partition_);
                 partition_.part_start = inicio;
                 partition_.part_s = tamano;
                 disco2.mbr_partition_1 = partition_;
@@ -236,7 +206,6 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
             //  int *varAux= &varOriginal;        //*varAux retorna el valor de var Original y tambien la modifica
             //  *varAux=3;
             //  varOriginal ahora tendra el valor de 3
-            Partition *aux;
             if(strcmp(disco2.mbr_partition_1.part_name,id)==0){
                 aux=&disco2.mbr_partition_1;
                 (*aux).part_s=(*aux).part_s+tamano; //se esta modificando el struct original para referenciarse en algun atributo usar parentesis (*id).atributo

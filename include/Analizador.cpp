@@ -1,8 +1,33 @@
-#include "Analizador.h"
+#include "../lib/Analizador.h"
+#include <vector>
+#include <iostream>
+#include <stdlib.h>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+
 
 Analizador::Analizador()
 {
     //Este es el constructor 
+}
+
+void Analizador::start(){
+    string entradaCmd="";
+    //mkdisk -s->3000 -u->K -path->/home/brandon/hola/Disco1.dsk
+    //rmdisk -path->/home/brandon/hola/Disco1.dsk
+    while (entradaCmd!="exit")
+    {
+        cout << "-----------------------------------------" <<endl;
+        cout << "================Proyecto 1==================" <<endl;
+        cout << "-----------------------------------------" <<endl;
+        cout << "[brandon@moon]: " ;
+        getline(cin,entradaCmd);
+        analisis(entradaCmd);
+    }   
+    
 }
 
 vector<string> Analizador::split_txt(string text){ // Split para separar tipo de comando y parametros
@@ -79,6 +104,7 @@ void Analizador::analisis(string entrada){
 }
 
 void Analizador::identificarParametros(string comando, vector<string> parametros){
+    Comandos cmd;
     string param = "";
     if(comando == "mkdisk"){
         cmd.param.Comando = "mkdisk";
