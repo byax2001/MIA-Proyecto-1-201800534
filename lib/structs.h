@@ -11,6 +11,9 @@ class Structs {
 public:
     Structs();
     // Structs
+struct Transition{
+
+};
 struct Partition
 {
     char part_status;
@@ -21,7 +24,7 @@ struct Partition
     char part_name[16];
 } partition_,vacioP;
 
-struct DiscoMBR
+struct MBR
 {
     int mbr_tamano;
     time_t mbr_fecha_creacion;
@@ -41,7 +44,7 @@ typedef struct
     int part_s;
     int part_next;
     char part_name[16];
-} Ebr;
+} EBR;
 
 
 };
