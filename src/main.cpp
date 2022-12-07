@@ -9,6 +9,7 @@ using namespace std;
 
 int main()
 {   
+    //   /home/brandon/Documentos/prueba1/Disco.dsk
     Analizador analisis;
     analisis.start();
    

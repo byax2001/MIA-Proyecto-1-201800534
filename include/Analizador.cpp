@@ -16,7 +16,7 @@ Analizador::Analizador()
 
 void Analizador::start(){
     string entradaCmd="";
-    //mkdisk -s->3000 -u->K -path->/home/brandon/hola/Disco1.dsk
+    //mkdisk -s->3000 -u->K -path->/home/brandon/hola2/Disco3.dsk
     //rmdisk -path->/home/brandon/hola/Disco1.dsk
     while (entradaCmd!="exit")
     {

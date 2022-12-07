@@ -35,7 +35,6 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     //-u: unidad
     //-path: direccion 
     Structs::DiscoMBR disco;
-
     int size_file = tamano;
     char bloque[1024]; //el tamaño de este array lleno es igual a un k
     for (int i = 0; i < 1024; i++)
@@ -56,14 +55,15 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     FILE *archivo_bin;
     archivo_bin = fopen(path.c_str(), "w");
     if (archivo_bin == NULL)
-    { // si es nulo es que el directorio no ha sido creado
+    {   // si es nulo es que el directorio no ha sido creado
         // creo directorio
-        int indexDoc = path.rfind("/");
-        string dir = path.substr(0, indexDoc);
-        string comando1 = "mkdir -p \"" + dir + "\"";
-        string comando2 = "rmdir \"" + dir + "\"";
+        // cout<<"Direccion: "<<path<<" :)"<<endl;
+        string comando1 = "mkdir -p \"" + path + "\"";
+        string comando2 = "rmdir \"" + path + "\"";
         system(comando1.c_str());
         system(comando2.c_str());
+        FILE *file = fopen(path.c_str(), "w+b");
+        fclose(file);
     }
     else
     {
@@ -82,17 +82,29 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     //fecha de creacion
     disco.mbr_fecha_creacion = time(0);
     //-------------------------------------
-    int numrand = num_aleatorio();
+    int numrand = rand() % 9999 + 100;
     //id unico al crear disco
     
     disco.mbr_dsk_signature = numrand;
     //-------------------------------------
     //tipo de particiones
     disco.dsk_fit = t_particion;
+    //particiones
+    disco.mbr_partition_1 = Structs::Partition();
+    disco.mbr_partition_2 = Structs::Partition();
+    disco.mbr_partition_3 = Structs::Partition();
+    disco.mbr_partition_4 = Structs::Partition();
 
+    //ubicarse al inicio del disco rellenado con \0 y luego escribir el mbr
     fseek(archivo_bin, 0, SEEK_SET);
     fwrite(&disco, sizeof(disco), 1, archivo_bin);
     fclose(archivo_bin);
+
+    //indicar que el disco fue creado
+    int indexDoc = path.rfind("/");
+    string nameDisk = path.substr(indexDoc,path.length());
+    cout<<"Disco" <<nameDisk<<" creado con exito!"<<endl;
+    getline(cin,nameDisk);
 }
 
 
