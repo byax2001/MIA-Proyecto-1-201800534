@@ -1,5 +1,7 @@
 #include "../lib/Comandos.h"
 
+int startValue;
+
 Comandos::Comandos()
 {
     // Constructor
@@ -104,7 +106,19 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     int indexDoc = path.rfind("/");
     string nameComandos = path.substr(indexDoc,path.length());
     cout<<"Disco" <<nameComandos<<" creado con exito!"<<endl;
-    getline(cin,nameComandos);
+    FILE *file = fopen(path.c_str(), "w+b");
+    fread(&disco, sizeof(disco), 1, archivo_bin);
+    cout<<"Tamaño: "<<disco.mbr_tamano<<" bytes"<<endl;
+    cout<<"Fit: "<<disco.dsk_fit<<endl;
+    struct tm *tm;
+    tm = localtime(&disco.mbr_fecha_creacion);
+    char mostrar_fecha [20];
+    strftime(mostrar_fecha, 20, "%Y/%m/%d %H:%M:%S",tm); 
+    cout<<"Fecha de creacion: "<<mostrar_fecha<<endl;
+    cout<<"Signature "<<disco.mbr_dsk_signature<<endl;
+    cout<<"Path: "<<path<<endl;
+    fclose(file);
+    shared.Pause_press_to_continue();//presione cualquier tecla para continuar
 }
 
 
@@ -535,7 +549,14 @@ void Comandos::generatepartition(string s,string u, string p, string t, string f
     }
 }
 
-
+vector<Structs::Partition> Comandos::getPartitions(Structs::MBR disco) {
+    vector<Structs::Partition> v;
+    v.push_back(disco.mbr_partition_1);
+    v.push_back(disco.mbr_partition_2);
+    v.push_back(disco.mbr_partition_3);
+    v.push_back(disco.mbr_partition_4);
+    return v;
+}
 Structs::MBR
 
 Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, vector<Structs::Partition> ps, int u) {

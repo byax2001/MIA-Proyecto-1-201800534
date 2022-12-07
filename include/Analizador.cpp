@@ -133,8 +133,8 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         // Ejecucion de metodo
         cmd.ejecutarInst(cmd.param);  //SE MANDA A EJECUTAR EL METODO
 
-    } else if(comando == "rep"){
-        cmd.param.Comando = "rep";
+    } else if(comando == "fdisk"){
+        cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
     } else if(comando == "exec"){
         cmd.param.Comando = "exec";
