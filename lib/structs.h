@@ -36,7 +36,7 @@ struct MBR
     Partition mbr_partition_4;
 } disco, disco2;
 
-typedef struct
+struct EBR
 {
     char part_status;
     char part_fit;
@@ -44,8 +44,7 @@ typedef struct
     int part_s;
     int part_next;
     char part_name[16];
-} EBR;
-
+};
 
 };
 

@@ -16,13 +16,14 @@ Analizador::Analizador()
 
 void Analizador::start(){
     string entradaCmd="";
-    //mkdisk -s->3000 -u->K -path->/home/brandon/hola2/Disco3.dsk
-    //rmdisk -path->/home/brandon/hola/Disco1.dsk
+    //mkdisk -s=3000 -u=K -path=/home/brandon/hola2/Disco3.dsk
+    //rmdisk -path=/home/brandon/hola/Disco1.dsk
+    printf("\033c");
     while (entradaCmd!="exit")
     {
-        cout << "-----------------------------------------" <<endl;
+        cout << "--------------------------------------------" <<endl;
         cout << "================Proyecto 1==================" <<endl;
-        cout << "-----------------------------------------" <<endl;
+        cout << "--------------------------------------------" <<endl;
         cout << "[brandon@moon]: " ;
         getline(cin,entradaCmd);
         analisis(entradaCmd);
@@ -113,19 +114,19 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         for (int i = 0; i < parametros.size(); i++)
         {
             param=parametros.at(i);
-            if(param.find("-s->")==0){
+            if(param.find("-s=")==0){
                 
-                param=replace_txt(param,"-s->","");
+                param=replace_txt(param,"-s=","");
                 cmd.param.tamano=stoi(param.c_str());///convertir valor a int
-            }else if  (param.find("-f->")==0){
-                param=replace_txt(param,"-f->","");
+            }else if  (param.find("-f=")==0){
+                param=replace_txt(param,"-f=","");
                 //aqui los ajusten son bf, ff, wf  pero como se toma solo laprimera letra como identificador da igual como venga
                 cmd.param.ajuste_particion=param.at(0); //el at devuelve un char
-            }else if(param.find("-u->")==0){
-                param=replace_txt(param,"-u->","");
+            }else if(param.find("-u=")==0){
+                param=replace_txt(param,"-u=","");
                 cmd.param.dimensional=param;
-            }else if ( param.find("-path->")==0){
-                param=replace_txt(param,"-path->","");
+            }else if ( param.find("-path=")==0){
+                param=replace_txt(param,"-path=","");
                 param=replace_txt(param,"\"","");
                 cmd.param.path=param;
             }
@@ -134,6 +135,42 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         cmd.ejecutarInst(cmd.param);  //SE MANDA A EJECUTAR EL METODO
 
     } else if(comando == "fdisk"){
+        for(int i=0; i<parametros.size(); i++){
+            param = parametros.at(i);
+            if(param.find("-s=")==0){
+                param=replace_txt(param,"-s=","");
+                cmd.param.tamano=stoi(param.c_str());///convertir valor a int
+            }else if(param.find("-u=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-u=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.u = param;
+            }else if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-path=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.path = param;
+            }else if(param.find("-t=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-t=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.typePartition=param.c_str()[0];
+            }else if(param.find("-f=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-f=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.fit=param.c_str()[0];
+            }else if(param.find("-delete=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-delete=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param._delete=param;
+                cmd.param.opcionFdisk = 'd';
+            }else if(param.find("-name=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-name=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.name=param;
+            }else if(param.find("-add=")==0){
+                param=replace_txt(param,"-s=","");
+                cmd.param.add=stoi(param.c_str());///convertir valor a int
+                cmd.param.opcionFdisk = 'a';
+            }
+        }
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
     } else if(comando == "exec"){
@@ -152,8 +189,8 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         int nParams=1;//parametros necesarios para este comando
         for(int i=0; i<parametros.size(); i++){
             param=parametros.at(i);
-            if(param.find("-path->")==0){  
-                param=replace_txt(param,"-path->","");
+            if(param.find("-path=")==0){  
+                param=replace_txt(param,"-path=","");
                 param=replace_txt(param,"\"","");
                 cmd.param.path=param;///convertir valor a int
                 nParams--;

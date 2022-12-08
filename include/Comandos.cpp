@@ -309,7 +309,7 @@ void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, cha
 }
 
 //FDISK
-void Comandos::fdisk(vector<string> context)
+void Comandos::fdisk(vector<string> context, string FdiskOption)
 {
     bool dlt = false;
     for (string current : context) {
