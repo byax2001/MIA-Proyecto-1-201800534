@@ -61,10 +61,10 @@ public:
     void DeleteFile(string path);
     //FDISK
     void Fdisk(int OpFdisk, string path, int tamano, char dimensional, char tparticion, char TAjuste, char id[]);
-    void fdisk(vector<string> context,string FdiskOption);
-    void generatepartition(string s, string u, string p, string t, string f, string n, string a);
-    void deletepartition(string d, string p, string n);
-    void addpartition(string add, string u, string n, string p);
+    void fdisk (char FdiskOption,int s,char u,string path, char tParti,char fit,string name,int add, string _delete);
+    void generatepartition(int s, char u, string p, char t, char f, string n);
+    void deletepartition(string _delete, string p, string n);
+    void addpartition(int add, char u, string n, string p);
     vector<Structs::Partition> getPartitions(Structs::MBR disk);
     Structs::MBR
     adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, vector<Structs::Partition> ps, int u);
