@@ -425,7 +425,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         if (bfile != NULL) {
             fseek(bfile, 0, SEEK_SET);
             fwrite(&disco, sizeof(Structs::MBR), 1, bfile);
-            if () {
+            if (t=='e') {
                 Structs::EBR ebr;
                 ebr.part_start = startValue;
                 fseek(bfile, startValue, SEEK_SET);
