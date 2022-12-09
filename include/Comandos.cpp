@@ -326,9 +326,11 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
     try
     {
         startValue = 0;
+        //evaluar tamaño correcto
         if(s<=0){
             throw runtime_error("-size debe de ser mayor que 0");
         }
+        //evaluar que las dimensionales sean correctas
         if(u=='b' || u=='k'|| u=='m'){
             if(!u=='b'){
                 s *= (u=='k') ? 1024: 1024*1024;
@@ -336,16 +338,20 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         }else{
             throw runtime_error("-u no contiene los valores esperados...");
         }
-
+        
+        //Evaluar que el tipo de particiones sea el correcto
         if(!(t=='p' ||  t=='e' || t=='l')){
             throw runtime_error("-t no contiene los valores esperados...");
         }
+        //Evaluar que el tipo e fit sea el correcto
         if(!(f=='b' || f=='f' || f=='w')){
             throw runtime_error("-f no contiene los valores esperados...");
         }
+        
+        //VERIFICAR QUE EL DISCO EXISTA 
         Structs::MBR disco; //
         FILE *file = fopen(p.c_str(), "rb+");
-        if(file!=NULL) //Verifica que el disco exista
+        if(file!=NULL)
         {
             rewind(file);
             fread(&disco, sizeof(disco),1,file);
@@ -354,8 +360,9 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
             return;
         }
         fclose(file);
+        
         //get partitions retorna un vector de structs Particion ya existentes
-        vector<Structs::Partition> partitions = getPartitions(disco); // status=0;
+        vector<Structs::Partition> partitions = getPartitions(disco); 
         vector<Transition> between;//vector entre transiciones
 
         int used = 0; //usado
@@ -373,11 +380,11 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
                 trn.before = trn.start - base; //resta entre el inicio de la particion y el tamanio del disco en la primera iteracion
                 base = trn.end; //nuevo valor  (lugar de inicio de la nueva particion)
 
-                if(used !=0)
+                if(used !=0)// SI YA SE MODIFICO LA PARTICION 
                 {
                     between.at(used-1).after = trn.start - (between.at(used-1).end);
                 }
-                between.push_back(trn);
+                between.push_back(trn); //INGRESAR AL VECTOR
                 used++;
                 //para saber si existe particion extendida
                 if(prttn.part_type == 'e' || prttn.part_type == 'E'){
@@ -385,7 +392,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
                     extended = prttn;
                 }
             }
-            //LIMITE E PARTICIONES
+            //LIMITE DE PARTICIONES ES 4, SOLO SE PUEDEN CREAR MAS PARTICIONES ENCIMA DE LA EXTENDIDA COMO LOGICA
             if(used == 4 && !t=='l'){
                 throw runtime_error("Limite de particiones alcanzado");
             }else if(ext==1 && t=='e'){
@@ -393,38 +400,43 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
             }
             c++;
         }
-
+        //SI SE DESEA CREAR UNA LOGICA Y NO HAY EXTENDIDAS DEBE DE TIRAR ERROR
         if (ext == 0 && t=='l') {
             throw runtime_error("No existe particion Extendida para crear la Logica");
         }
+        
+        //BEETWEEN ES UN VECTOR DE TRANSITIONS 
         if (used != 0) {
             between.at(between.size() - 1).after = disco.mbr_tamano - between.at(between.size() - 1).end;
         }
 
         try {
+            //N: name   p: path
             findby(disco, n, p);
             shared.handler("FDISK", " Este nombre ya esta en uso");
             return;
-        } catch (exception &e) {
-        }
+        } catch (exception &e) {}
+        
         //Nueva particion la que el usuario esta mandando
-        Structs::Partition transition;
-        transition.part_status = '1';
-        transition.part_s = 'size';
-        transition.part_type = t; //P,E,L
-        transition.part_fit = f;
-        strcpy(transition.part_name, n.c_str());
+        Structs::Partition newPartition;
+        newPartition.part_status = '1';
+        newPartition.part_s = s;
+        newPartition.part_type = t; //P,E,L
+        newPartition.part_fit = f; //B,F,W
+        strcpy(newPartition.part_name, n.c_str());
         //buenos pases
         if (t=='l') {
-            logic(transition, extended, p);
+            logic(newPartition, extended, p);
             return;
         }
-        disco = adjust(disco, transition, between, partitions, used); 
+        //DISCO == MBR 
+        disco = adjust(disco, newPartition, between, partitions, used); 
 
         FILE *bfile = fopen(p.c_str(), "rb+");
         if (bfile != NULL) {
             fseek(bfile, 0, SEEK_SET);
             fwrite(&disco, sizeof(Structs::MBR), 1, bfile);
+            //SI LA PARTICION INGRESADA ES UNA PARTICION EXTENDIDA
             if (t=='e') {
                 Structs::EBR ebr;
                 ebr.part_start = startValue;
@@ -793,7 +805,7 @@ void Comandos::deletepartition(string _delete, string p, string n) {
 
 void Comandos::addpartition(int add, char u, string n, string p) {
     try {
-        int i = stoi(add);
+        int i = add;
 
         if (shared.compare(u, "b") || shared.compare(u, "k") || shared.compare(u, "m")) {
 
