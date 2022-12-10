@@ -349,7 +349,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         }
         
         //VERIFICAR QUE EL DISCO EXISTA 
-        Structs::MBR disco; //
+        Structs::MBR disco; //structura mbr del disco en realidad
         FILE *file = fopen(p.c_str(), "rb+");
         if(file!=NULL)
         {
@@ -411,7 +411,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         }
 
         try {
-            //N: name   p: path
+            //N: ame   p: path
             findby(disco, n, p);
             shared.handler("FDISK", " Este nombre ya esta en uso");
             return;
@@ -424,7 +424,8 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         newPartition.part_type = t; //P,E,L
         newPartition.part_fit = f; //B,F,W
         strcpy(newPartition.part_name, n.c_str());
-        //buenos pases
+        
+        //LOGICASS---------------------------------------------------
         if (t=='l') {
             logic(newPartition, extended, p);
             return;
@@ -476,7 +477,7 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
     } else {
         Transition toUse;
         int c = 0;
-        for (Transition tr : t) {
+        for (Transition tr : t) { //transicion por cada elemento del vector de transiciones
             if (c == 0) {
                 toUse = tr;
                 c++;
@@ -619,6 +620,7 @@ Structs::Partition Comandos::findby(Structs::MBR mbr, string name, string path) 
         }
     }
     if (ext) {
+        //obtener las particiones logicas 
         vector<Structs::EBR> ebrs = getlogics(extended, path);
         for (Structs::EBR ebr : ebrs) {
             if (ebr.part_status == '1') {
@@ -678,6 +680,7 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
     } while (true);
 }
 
+//retorna un vector de particiones logicas
 vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p) {
     vector<Structs::EBR> ebrs;
 
@@ -686,6 +689,7 @@ vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p)
     Structs::EBR tmp;
     fseek(file, partition.part_start, SEEK_SET);
     fread(&tmp, sizeof(Structs::EBR), 1, file);
+    //recorrer el archivo hasta hallar datos ilogicos, ahi no habra nada y sera el fin de las particiones
     do {
         if (!(tmp.part_status == '0' && tmp.part_next == -1)) {
             if (tmp.part_status != '0') {
@@ -701,17 +705,17 @@ vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p)
     return ebrs;
 }
 
-void Comandos::deletepartition(string _delete, string p, string n) {
+void Comandos::deletepartition(string d, string p, string n) {
     try {
 
         if (p.substr(0, 1) == "\"") {
             p = p.substr(1, p.length() - 2);
         }
-
+        /*EL AUX DIJO QUE SOLO VA A VENIR FULL EL DELETE SIEMPRE
         if (!(shared.compare(d, "fast") || shared.compare(d, "full"))) {
             throw runtime_error("-delete necesita valores específicos");
         }
-
+        */
         FILE *file = fopen(p.c_str(), "rb+");
         if (file == NULL) {
             throw runtime_error("disco no existente");
@@ -807,10 +811,10 @@ void Comandos::addpartition(int add, char u, string n, string p) {
     try {
         int i = add;
 
-        if (shared.compare(u, "b") || shared.compare(u, "k") || shared.compare(u, "m")) {
+        if (u=='b' || u=='k' || u=='m') {
 
-            if (!shared.compare(u, "b")) {
-                i *= (shared.compare(u, "k")) ? 1024 : 1024 * 1024;
+            if (!u=='b') {
+                i *= (u=='k') ? 1024 : 1024 * 1024;
             }
         } else {
             throw runtime_error("-u necesita valores específicos");
