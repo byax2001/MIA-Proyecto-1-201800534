@@ -17,17 +17,17 @@ class Mount {
     {
         char letter;
         char status = '0';
-        char name[20];
-    }MountedPartition;
+        char name[16];
+    }MountedPartition; //particion montada
 
     typedef struct _MD
     {
         char path[150];
         char status = '0';
-        MountedPartition mpartitions[26];
-    }MountedDisc;
+        MountedPartition mpartitions[26]; //array de particiones montadas
+    }MountedDisc; //Disco montado
 
-    MountedDisc mounted[99];
+    MountedDisc mounted[99]; //array de discos montados
 
     void mount(vector<string> context);
 

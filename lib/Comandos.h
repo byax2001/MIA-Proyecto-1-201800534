@@ -18,6 +18,7 @@
 #include "../lib/structs.h"
 #include "../lib/shared.h"
 
+
 // Apartado para los comandos
 struct Parametros
 {
@@ -74,6 +75,7 @@ public:
 
 private:
     Shared shared;
+ 
 };
 
 #endif

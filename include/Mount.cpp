@@ -6,7 +6,44 @@
 #include <locale>
 
 using namespace std;
+Mount::Mount(){
 
+}
+void Mount::mount(vector<string> context) {
+    if (context.empty()) {
+        listmount();
+        return;
+    }
+    vector<string> required = {"name", "path"};
+    string path;
+    string name;
+    for (auto current : context) {
+        string id = shared.lower(current.substr(0, current.find('=')));
+        current.erase(0, id.length() + 1);
+        if (current.substr(0, 1) == "\"") {
+            current = current.substr(1, current.length() - 2);
+        }
+
+        if (shared.compare(id, "name")) {
+            if (count(required.begin(), required.end(), id)) {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                name = current;
+            }
+        } else if (shared.compare(id, "path")) {
+            if (count(required.begin(), required.end(), id)) {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                path = current;
+            }
+        }
+    }
+    if (required.size() != 0) {
+        shared.handler("MOUNT", "requiere ciertos parámetros obligatorios");
+        return;
+    }
+    mount(path, name);
+}
 
 
 void Mount::mount(string p, string n) {
@@ -17,6 +54,7 @@ void Mount::mount(string p, string n) {
         }
 
         Structs::MBR disk;
+        //PONE EL BUFFER AL INICIO EL DOCUMENTO
         rewind(validate);
         fread(&disk, sizeof(Structs::MBR), 1, validate);
         fclose(validate);
@@ -41,7 +79,7 @@ void Mount::mount(string p, string n) {
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
                         string re = to_string(i + 1) + alfabeto.at(j);
-                        shared.response("MOUNT", "se ha realizado correctamente el mount -id=65" + re);
+                        shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         return;
                     }
                 }
@@ -57,7 +95,7 @@ void Mount::mount(string p, string n) {
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
                         string re = to_string(i + 1) + alfabeto.at(j);
-                        shared.response("MOUNT", "se ha realizado correctamente el mount -id=65" + re);
+                        shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         return;
                     }
                 }
@@ -94,12 +132,13 @@ void Mount::unmount(vector<string> context) {
 
 void Mount::unmount(string id) {
     try {
-        if (!(id[0] == '6' && id[1] == '5')) {
+        //2018005 34
+        if (!(id[0] == '3' && id[1] == '4')) {
             throw runtime_error("el primer identificador no es válido");
         }
         string past = id;
         char letter = id[id.length() - 1];
-        id.erase(0, 2);
+        id.erase(0, 2); //borrar los primeros dos digitos
         id.pop_back();
         int i = stoi(id) - 1;
         if (i < 0) {
@@ -131,7 +170,7 @@ void Mount::unmount(string id) {
 
 Structs::Partition Mount::getmount(string id, string *p) {
 
-    if (!(id[0] == '6' && id[1] == '5')) {
+    if (!(id[0] == '3' && id[1] == '4')) {
         throw runtime_error("el primer identificador no es válido");
     }
     string past = id;
@@ -167,8 +206,8 @@ Structs::Partition Mount::getmount(string id, string *p) {
 void Mount::listmount() {
     cout << "\n<-------------------------- MOUNTS -------------------------->"
          << endl;
-    for (int i = 0; i < 99; i++) {
-        for (int j = 0; j < 26; j++) {
+    for (int i = 0; i < 99; i++) { //discos montados
+        for (int j = 0; j < 26; j++) { //particiones por cada disco
             if (mounted[i].mpartitions[j].status == '1') {
                 cout << "> 87" << i + 1 << alfabeto.at(j) << ", " << mounted[i].mpartitions[j].name << endl;
             }

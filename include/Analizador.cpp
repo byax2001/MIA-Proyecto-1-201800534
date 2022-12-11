@@ -122,6 +122,12 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
      //mkdisk -s=3000 -u=K -path=/home/brandon/hola2/Disco3.dsk
     //rmdisk -path=/home/brandon/hola2/disco3.dsk
     //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
+    //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion1
+    //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion2
+    //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion3
+    //mount 
+
+
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk -u=K -name=Particion2 -s=300
     //fdisk -s=1 -t=L -u=M -f=BF -path="/home/brandon/hola2/disco3.dsk"-name="Particion3"
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-name=Part3 -u=K -s=200
@@ -202,7 +208,34 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         }
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
-    } else if(comando.compare("exec")==0){
+    } else if(comando.compare("mount")==0){
+    
+        for(int i=0; i<parametros.size(); i++){
+            param = parametros.at(i);
+            if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-path=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.path = param;
+            }else if(param.find("-name=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-name=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.name=param;
+            }
+        }
+        cmd.param.Comando = "mount";
+        cmd.ejecutarInst(cmd.param);
+    }else if(comando.compare("unmount")==0){
+        for(int i=0; i<parametros.size(); i++){
+            param = parametros.at(i);
+            if(param.find("-id=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-id=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.id = param;
+            }
+        }
+        cmd.param.Comando = "unmount";
+        cmd.ejecutarInst(cmd.param);
+    }else if(comando.compare("exec")==0){
         cmd.param.Comando = "exec";
         for(int i=0; i<parametros.size(); i++){
             param = parametros.at(i);

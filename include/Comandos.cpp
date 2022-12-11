@@ -22,6 +22,12 @@ void Comandos::ejecutarInst(Parametros p)
     else if (p.Comando == "rmdisk")
     {
         DeleteFile(p.path);
+    }else if (p.Comando=="mount"){
+       
+    }else if (p.Comando == "unmount"){
+       
+    }else if (p.Comando == "mkfs"){
+
     }
     else
     {
@@ -235,7 +241,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
                     extended = prttn;
                 }
             }
-            //LIMITE DE PARTICIONES ES 4, SOLO SE PUEDEN CREAR MAS PARTICIONES ENCIMA DE LA EXTENDIDA COMO LOGICA
+            //SOLO SE PUEDEN CREAR LOGICAS LUEGO DE 4 PARTICIONES
             if(used == 4 && !t=='l'){
                 throw runtime_error("Limite de particiones alcanzado");
             }else if(ext==1 && t=='e'){

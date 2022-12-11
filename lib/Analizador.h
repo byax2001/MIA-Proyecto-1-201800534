@@ -9,6 +9,7 @@
 #include <string.h>
 #include <vector>
 #include "../lib/Comandos.h"
+#include "../lib/Mount.h"
 #include <fstream>
 #include <iostream>
 using namespace std; 
@@ -26,6 +27,8 @@ public:
     void identificarParametros(string comando, vector<string> parametros);
     void LeerScript(string path);
     void print(string s);
+private:
+    Mount mount;
 };
 
 #endif
