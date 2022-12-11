@@ -7,44 +7,7 @@
 
 using namespace std;
 
-Mount::Mount(){}
 
-void Mount::mount(vector<string> context) {
-    if (context.empty()) {
-        listmount();
-        return;
-    }
-    vector<string> required = {"name", "path"};
-    string path;
-    string name;
-
-    for (auto current : context) {
-        string id = shared.lower(current.substr(0, current.find('=')));
-        current.erase(0, id.length() + 1);
-        if (current.substr(0, 1) == "\"") {
-            current = current.substr(1, current.length() - 2);
-        }
-
-        if (shared.compare(id, "name")) {
-            if (count(required.begin(), required.end(), id)) {
-                auto itr = find(required.begin(), required.end(), id);
-                required.erase(itr);
-                name = current;
-            }
-        } else if (shared.compare(id, "path")) {
-            if (count(required.begin(), required.end(), id)) {
-                auto itr = find(required.begin(), required.end(), id);
-                required.erase(itr);
-                path = current;
-            }
-        }
-    }
-    if (required.size() != 0) {
-        shared.handler("MOUNT", "requiere ciertos parámetros obligatorios");
-        return;
-    }
-    mount(path, name);
-}
 
 void Mount::mount(string p, string n) {
     try {

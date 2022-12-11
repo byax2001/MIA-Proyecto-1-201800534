@@ -1,4 +1,5 @@
 #include "../lib/Analizador.h"
+#include "../lib/Analizador.h"
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
@@ -144,6 +145,11 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         cmd.ejecutarInst(cmd.param);  //SE MANDA A EJECUTAR EL METODO
 
     } else if(comando == "fdisk"){
+        //parametros opcionales
+        cmd.param.dimensional='k';
+        cmd.param.typePartition='p';
+        cmd.param.fit = 'w';
+        
         for(int i=0; i<parametros.size(); i++){
             param = parametros.at(i);
             if(param.find("-s=")==0){

@@ -549,10 +549,6 @@ vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p)
 
 void Comandos::deletepartition(string d, string p, string n) {
     try {
-
-        if (p.substr(0, 1) == "\"") {
-            p = p.substr(1, p.length() - 2);
-        }
         /*EL AUX DIJO QUE SOLO VA A VENIR FULL EL DELETE SIEMPRE
         if (!(shared.compare(d, "fast") || shared.compare(d, "full"))) {
             throw runtime_error("-delete necesita valores específicos");
@@ -581,25 +577,39 @@ void Comandos::deletepartition(string d, string p, string n) {
             if (partitions[i].part_status == '1') {
                 if (partitions[i].part_type == 'P') {
                     if (shared.compare(partitions[i].part_name, n)) {
-                        if (shared.compare(d, "fast")) {
-                            partitions[i].part_status = '0';
-                        } else {
+                       /* if (shared.compare(d, "fast")) {
+                            partitions[i].part_status = '0'; //eliminar particion
+                        } else {*/
                             past = partitions[i];
                             partitions[i] = Structs::Partition();
                             fll = true;
-                        }
+                        //}
                         break;
                     }
                 } else {
                     if (shared.compare(partitions[i].part_name, n)) {
-                        if (shared.compare(d, "fast")) {
+                        /*if (shared.compare(d, "fast")) {
                             partitions[i].part_status = '0';
                         } else {
                             past = partitions[i];
                             partitions[i] = Structs::Partition();
                             fll = true;
+                        }*/
+
+                        past = partitions[i];
+                        int start = partitions[i].part_start;
+                        int tam = partitions[i].part_s;
+                        char caracter = '\0';
+                        partitions[i] = Structs::Partition();
+                        
+                        //BORRAR TODO ADENTRO DE LA PARTICION EXTENDIDA
+                        fseek(file, start, SEEK_SET);
+                        for (int i = 0; i < tam; i++)
+                        {
+                            fwrite(&caracter,sizeof(caracter),1,file);
                         }
-                        break;
+                        fll = true;
+                        break; //SI ERA LA EXTENDIDA EL CICLO SE DETIENE ACA
                     }
                     vector<Structs::EBR> ebrs = getlogics(partitions[i], p);
                     int count = 0;
@@ -652,7 +662,7 @@ void Comandos::deletepartition(string d, string p, string n) {
 void Comandos::addpartition(int add, char u, string n, string p) {
     try {
         int i = add;
-
+        //tamaño en bytes 
         if (u=='b' || u=='k' || u=='m') {
 
             if (!u=='b') {
@@ -661,8 +671,9 @@ void Comandos::addpartition(int add, char u, string n, string p) {
         } else {
             throw runtime_error("-u necesita valores específicos");
         }
-
-
+        
+        int add_tam = i;
+        //si el disco existe 
         FILE *file = fopen(p.c_str(), "rb+");
         if (file == NULL) {
             throw runtime_error("disco no existente");
@@ -687,26 +698,50 @@ void Comandos::addpartition(int add, char u, string n, string p) {
                 if (shared.compare(partitions[i].part_name, n)) {
                     //part_s = tamaño de la particion
                     //si la particion no esta vacia
-                    if ((partitions[i].part_s + (i)) > 0) {
+                    if ((partitions[i].part_s + (add_tam)) > 0) {
+                        //SI LA PARTICION CON EL NOMBRE CORRECTO ESTA ANTES DEL ULTIMO
                         if (i != 3) {
                             if (partitions[i + 1].part_start != 0) {
-                                if (((partitions[i].part_s + (i) +partitions[i].part_start) <=
-                                     partitions[i + 1].part_start)) {
-                                    partitions[i].part_s += i;
-                                    break;
-                                } else {
-                                    throw runtime_error("se sobrepasa el límite");
+                                if (add_tam > 0) {
+                                    if ((partitions[3].part_s + (add_tam) +partitions[3].part_start) <=
+                                    disk.mbr_tamano) {
+                                        partitions[3].part_s += add_tam;
+                                        break;
+                                    } else {
+                                        throw runtime_error("se sobrepasa el límite");
+                                    }
+                                }else{
+                                    if (((partitions[i].part_s + (add_tam) +partitions[i].part_start) >
+                                        partitions[i].part_start)) {
+                                        partitions[i].part_s -= add_tam;
+                                        break;
+                                    } else {
+                                        throw runtime_error("Elimina mas espacio del posible");
+                                    }
+                                    partitions[i].part_s -= add_tam; 
                                 }
+                                
                             }
                         }
-                        if ((partitions[i].part_s + i +partitions[i].part_start) <= 
-                        disk.mbr_tamano) {
-                            partitions[i].part_s += i;
-                            break;
-                        } else {
-                            throw runtime_error("se sobrepasa el límite");
+                        //SI LA PARTICION CON EL NOMBRE BUSCADO ES EL ULTIMO DATO
+                        if (add_tam > 0) {
+                            if ((partitions[3].part_s + (add_tam) +partitions[3].part_start) <=
+                                disk.mbr_tamano) {
+                                partitions[3].part_s += add_tam;
+                                break;
+                            } else {
+                                throw runtime_error("se sobrepasa el límite");
+                            }
+                        }else{
+                            if (((partitions[i].part_s + (add_tam) +partitions[i].part_start) >
+                                partitions[i].part_start)) {
+                                partitions[i].part_s -= add_tam;
+                                break;
+                            } else {
+                                throw runtime_error("Elimina mas espacio del posible");
+                            }
+                            partitions[i].part_s -= add_tam; 
                         }
-
                     }
                 }
             }
@@ -719,7 +754,7 @@ void Comandos::addpartition(int add, char u, string n, string p) {
 
         rewind(file);
         fwrite(&disk, sizeof(Structs::MBR), 1, file);
-        shared.response("FDISK", "la partición se ha aumentado correctamente");
+        shared.response("FDISK", "la partición se ha aumentado/disminuido correctamente");
         fclose(file);
     }
     catch (exception &e) {
