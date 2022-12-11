@@ -25,7 +25,7 @@ struct Parametros
     string Comando = "";
     int tamano = 0;
     char ajuste_particion = 'w';
-    string dimensional = "k";
+    char dimensional = 'k';
     string path;     // path
     //FDISK
     char opcionFdisk='c'; // crear particion(c), aumentar tamaño (a) de esta o eliminar(d)
@@ -55,7 +55,7 @@ public:
     } Transition;
     Parametros param;
     //MKISK
-    void CreateDisk(int tamano, char t_particion, string dim, string dir);
+    void CreateDisk(int tamano, char t_particion, char dim, string dir);
     void ejecutarInst(Parametros p);
     //RMFILE
     void DeleteFile(string path);

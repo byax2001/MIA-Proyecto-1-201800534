@@ -19,7 +19,7 @@ void Analizador::start(){
     string entradaCmd="";
     //mkdisk -s=3000 -u=K -path=/home/brandon/hola8/Disco3.dsk
     //rmdisk -path=/home/brandon/hola2/disco3.dsk
-    //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
+    //fdisk -s=300 -path=/home/Disco1.dsk -name=Particion1
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-u=K -name=Particion2 -s=300
     //fdisk -s=1 -t=L -u=M -f=BF -path="/home/brandon/hola2/disco3.dsk"-name="Particion3"
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-name=Part3 -u=K -s=200
@@ -117,7 +117,21 @@ void Analizador::analisis(string entrada){
 void Analizador::identificarParametros(string comando, vector<string> parametros){
     Comandos cmd;
     string param = "";
-    if(comando == "mkdisk"){
+
+
+     //mkdisk -s=3000 -u=K -path=/home/brandon/hola2/Disco3.dsk
+    //rmdisk -path=/home/brandon/hola2/disco3.dsk
+    //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
+    //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk -u=K -name=Particion2 -s=300
+    //fdisk -s=1 -t=L -u=M -f=BF -path="/home/brandon/hola2/disco3.dsk"-name="Particion3"
+    //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-name=Part3 -u=K -s=200
+    //fdisk -delete=fast -name="Particion1" -path=/home/brandon/hola2/disco3.dsk
+    //fdisk -name=Particion1 -delete=full -path=/home/brandon/hola2/disco3.dsk
+    //fdisk -add=-500 -s=10 -u=K -path=/home/brandon/hola2/disco3.dsk -name=Particion4
+    //fdisk -add=1 -u=M -path=/home/brandon/hola2/disco3.dsk -name="Particion 4"
+ 
+
+    if(comando.compare("mkdisk")==0){
         cmd.param.Comando = "mkdisk";
         cmd.param.ajuste_particion='f';
         cmd.param.dimensional='m';
@@ -134,7 +148,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
                 cmd.param.ajuste_particion=param.at(0); //el at devuelve un char
             }else if(param.find("-u=")==0){
                 param=replace_txt(param,"-u=","");
-                cmd.param.dimensional=param;
+                cmd.param.dimensional=param.at(0);
             }else if ( param.find("-path=")==0){
                 param=replace_txt(param,"-path=","");
                 param=replace_txt(param,"\"","");
@@ -144,7 +158,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         // Ejecucion de metodo
         cmd.ejecutarInst(cmd.param);  //SE MANDA A EJECUTAR EL METODO
 
-    } else if(comando == "fdisk"){
+    } else if(comando.compare("fdisk")==0){
         //parametros opcionales
         cmd.param.dimensional='k';
         cmd.param.typePartition='p';
@@ -188,7 +202,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         }
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
-    } else if(comando == "exec"){
+    } else if(comando.compare("exec")==0){
         cmd.param.Comando = "exec";
         for(int i=0; i<parametros.size(); i++){
             param = parametros.at(i);
@@ -199,7 +213,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
             }
         }
         LeerScript(cmd.param.path);   
-    }else if(comando=="rmdisk"){
+    }else if(comando.compare("rmdisk")==0){
         cmd.param.Comando = "rmdisk";
         int nParams=1;//parametros necesarios para este comando
         for(int i=0; i<parametros.size(); i++){
@@ -217,36 +231,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         }else{
             cout<<"Error: faltan parametros"<<endl;
         }
-    }else if (comando=="fdisk"){
-        cmd.param.Comando=="fdisk";
-        int add_Delete=0;  //0 es add y 1 es delete
-        int aux=0;
-        //revisar que no venga add  y delete en el mismo apartado
-        for (size_t i = 0; i < parametros.size(); i++)
-        {
-            if (parametros.at(i)=="add"){
-                add_Delete=0;
-                aux++;
-            }else if (parametros.at(i)=="delete"){
-                add_Delete=1;
-                aux++;
-            }
-        }
-        int nparametros=0;
-        if (aux==0){//creacion de una particion
-            nparametros=3;
-            
-        }else if (aux<2){
-            if(add_Delete==0){//si es add
-                nparametros=3;
-            }else{//si es delete
-                nparametros=2;
-                
-            }
-        }else{
-            cout<<"parametros incompatibles en la misma linea"<<endl;
-        }
-    }else if(comando == "exit"){
+    }else if(comando.compare("exit")==0){
         cout<<"Exit"<<endl;
     }else{
         cout<<"Comando no reconocido"<<endl;
@@ -275,4 +260,8 @@ void Analizador::LeerScript(string path){
             
         }
     }
+}
+
+void Analizador::print(string s){
+    cout<< s<< endl;
 }

@@ -15,10 +15,9 @@ void Comandos::ejecutarInst(Parametros p)
         
         CreateDisk(p.tamano, p.ajuste_particion, p.dimensional, p.path);
     }
-    else if (p.Comando == "fidsk")
+    else if (p.Comando == "fdisk")
     {
-        
-        cout<<"hola";
+        fdisk(p.opcionFdisk,p.tamano,p.dimensional,p.path,p.typePartition,p.fit,p.name,p.add,p._delete);
     }
     else if (p.Comando == "rmdisk")
     {
@@ -31,7 +30,7 @@ void Comandos::ejecutarInst(Parametros p)
     }
 }
 //MKDISK
-void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
+void Comandos::CreateDisk(int tamano, char t_particion, char dim, string path)
 {
     //-s: tamaño del disco
     //-f:bf,ff,wf
@@ -45,11 +44,11 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
         bloque[i] = '\0';
     }
     // escribir un bloque es igual a escribir un kilobyte
-    if (dim == "k")
+    if (dim == 'k')
     {
         size_file = size_file;
     }
-    else if (dim == "m")
+    else if (dim == 'm')
     {
         size_file = size_file * 1024;
     }
@@ -135,6 +134,7 @@ void Comandos::DeleteFile(string path)
     {
         cout << "Se elimino el archivo correctamente" << endl;
     }
+    
 }
 
 
@@ -144,11 +144,16 @@ void Comandos::fdisk(char FdiskOption,int s,char u,string path, char tPart,char 
     if(FdiskOption=='c'){
         //s, u, path, t,f
         generatepartition(s,u,path,tPart,fit,name);
+        shared.response("FDISK","Particion creada");
     }else if(FdiskOption=='c'){
         addpartition(add,u,name,path);
+        shared.response("FDISK","Aumento de Particion exitosa");
     }else{
         deletepartition(_delete,path,name);
+        shared.response("FDISK","Eliminacion de Particion");
     }
+    shared.Pause_press_to_continue();//presione cualquier tecla para continuar
+
 }
 
 void Comandos::generatepartition(int s,char u, string p, char t, char f, string n){
@@ -219,7 +224,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
 
                 if(used !=0)// SI YA SE MODIFICO LA PARTICION 
                 {
-                    //transicion (between[n]) = start - transicion[n].end
+                    //transicion (between[n]) . despues  = start - transicion[n].end
                     between.at(used-1).after = trn.start - (between.at(used-1).end);
                 }
                 between.push_back(trn); //INGRESAR AL VECTOR

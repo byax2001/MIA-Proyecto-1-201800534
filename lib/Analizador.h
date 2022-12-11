@@ -25,6 +25,7 @@ public:
     string replace_txt(string str, const string& from, const string& to);
     void identificarParametros(string comando, vector<string> parametros);
     void LeerScript(string path);
+    void print(string s);
 };
 
 #endif

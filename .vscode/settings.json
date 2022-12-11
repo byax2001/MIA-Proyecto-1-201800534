@@ -4,6 +4,7 @@
         "stdexcept": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "*.tcc": "cpp"
     }
 }
