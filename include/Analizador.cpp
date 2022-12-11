@@ -17,10 +17,19 @@ Analizador::Analizador()
 void Analizador::start(){
     string entradaCmd="";
     //mkdisk -s=3000 -u=K -path=/home/brandon/hola2/Disco3.dsk
-    //rmdisk -path=/home/brandon/hola/Disco1.dsk
-    printf("\033c");
+    //rmdisk -path=/home/brandon/hola2/disco3.dsk
+    //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
+    //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-u=K -name=Particion2 -s=300
+    //fdisk -s=1 -t=L -u=M -f=BF -path="/home/brandon/hola2/disco3.dsk"-name="Particion3"
+    //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-name=Part3 -u=K -s=200
+    //fdisk -delete=fast -name="Particion1" -path=/home/brandon/hola2/disco3.dsk
+    //fdisk -name=Particion1 -delete=full -path=/home/brandon/hola2/disco3.dsk
+    //fdisk -add=-500 -s=10 -u=K -path=/home/brandon/hola2/disco3.dsk -name=Particion4
+    //fdisk -add=1 -u=M -path=/home/brandon/hola2/disco3.dsk -name="Particion 4"
+    
     while (entradaCmd!="exit")
     {
+        printf("\033c");
         cout << "--------------------------------------------" <<endl;
         cout << "================Proyecto 1==================" <<endl;
         cout << "--------------------------------------------" <<endl;

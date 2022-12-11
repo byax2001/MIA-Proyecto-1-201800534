@@ -137,177 +137,6 @@ void Comandos::DeleteFile(string path)
     }
 }
 
-void Comandos::Fdisk(int OpFdisk, string path, int tamano, char dimensional, char tparticion, char tAjuste, char id[])
-{
-    //OpFdisk : si se va a añadir o eliminar una particion 
-    //-s tamaño
-    //-u unidad
-    // path path
-    //-t tipo de particion
-    //-f mejor ajuste
-    // delete borrar particion
-    // add aumentar tamño de una particion
-    // name
-    Structs::MBR disco,disco2;
-    Structs::Partition partition_,partmod,*aux,vacioP;
-    // revisar que el disco a leer exista
-    FILE *archivo_bin;
-    archivo_bin = fopen(path.c_str(), "rb+");
-    if (archivo_bin != NULL)
-    {
-        fread(&disco2, sizeof(disco2), 1, archivo_bin);
-        //Crear Particion 
-        if (OpFdisk == 0)
-        {
-            if(strcmp(disco2.mbr_partition_1.part_name,id)==0){
-                //nombre ya existe error
-                cout<<"Ya existe una particion con este id"<<endl;
-                return;
-            }else if(strcmp(disco2.mbr_partition_2.part_name,id)==0){
-                //nombre ya existe error
-                cout<<"Ya existe una particion con este id"<<endl;
-                return;
-            } else if(strcmp(disco2.mbr_partition_3.part_name,id)==0){
-                //nombre ya existe error
-                cout<<"Ya existe una particion con este id"<<endl;
-                return;
-            } else if(strcmp(disco2.mbr_partition_4.part_name,id)==0){
-                //nombre ya existe error
-                cout<<"Ya existe una particion con este id"<<endl;
-                return;
-            }
-            partition_.part_status = 'd'; // desactivado
-            partition_.part_type = tparticion;
-            partition_.part_fit = tAjuste; // bestfit firsfit  worsfit
-            strcpy(partition_.part_name,id);//pasar el contenido de una variable a otra (destino, origen)
-
-            if (disco2.mbr_partition_1.part_status == '\0')
-            {
-                int inicio = sizeof(disco2) + 1;
-                int tamano = sizeof(partition_);
-                partition_.part_start = inicio;
-                partition_.part_s = tamano;
-                disco2.mbr_partition_1 = partition_;
-            }
-            else if (disco2.mbr_partition_2.part_status == '\0')
-            {
-                int inicio = disco2.mbr_partition_1.part_start + disco2.mbr_partition_1.part_s + 1;
-                int tamano = sizeof(partition_);
-                partition_.part_start = inicio;
-                partition_.part_s = tamano;
-                disco2.mbr_partition_2 = partition_;
-            }
-            else if (disco2.mbr_partition_3.part_status == '\0')
-            {
-                int inicio = disco2.mbr_partition_2.part_start + disco2.mbr_partition_2.part_s + 1;
-                int tamano = sizeof(partition_);
-                partition_.part_start = inicio;
-                partition_.part_s = tamano;
-                disco2.mbr_partition_2 = partition_;
-            }
-            else if (disco2.mbr_partition_4.part_status == '\0')
-            { //\0 es el valor de las variables char sin inicializar
-                int inicio = disco2.mbr_partition_3.part_start + disco2.mbr_partition_3.part_s + 1;
-                int tamano = sizeof(partition_);
-                partition_.part_start = inicio;
-                partition_.part_s = tamano;
-                disco2.mbr_partition_2 = partition_;
-            }
-            fseek(archivo_bin, 0, SEEK_SET);
-            fwrite(&disco2, sizeof(disco2), 1, archivo_bin);
-            fclose(archivo_bin);
-            cout << "Particion creada" << endl;
-        }else if (OpFdisk == 1){ // Opcion ADD
-            // para que otra variable tome el valor de otra y que esta al modificarle se modifiquen las dos
-            // hacer esto:
-            //  Punteros:
-            //  int varOriginal=0
-            //  int *varAux= &varOriginal;        //*varAux retorna el valor de var Original y tambien la modifica
-            //  *varAux=3;
-            //  varOriginal ahora tendra el valor de 3
-            if(strcmp(disco2.mbr_partition_1.part_name,id)==0){
-                aux=&disco2.mbr_partition_1;
-                (*aux).part_s=(*aux).part_s+tamano; //se esta modificando el struct original para referenciarse en algun atributo usar parentesis (*id).atributo
-                disco2.mbr_partition_2.part_start=(*aux).part_start+(*aux).part_s+1;
-                disco2.mbr_partition_3.part_start=disco2.mbr_partition_2.part_start+disco2.mbr_partition_2.part_s+1;
-                disco2.mbr_partition_4.part_start=disco2.mbr_partition_3.part_start+disco2.mbr_partition_3.part_s+1;
-            }else if(strcmp(disco2.mbr_partition_2.part_name,id)==0){
-                disco2.mbr_partition_3.part_start=disco2.mbr_partition_2.part_start+disco2.mbr_partition_2.part_s+1;
-                disco2.mbr_partition_4.part_start=disco2.mbr_partition_3.part_start+disco2.mbr_partition_3.part_s+1;
-            }else if(strcmp(disco2.mbr_partition_3.part_name,id)==0){
-                aux=&disco2.mbr_partition_3;
-                (*aux).part_s=(*aux).part_s+tamano; //se esta modificando el struct original para referenciarse en algun atributo usar parentesis (*id).atributo
-                disco2.mbr_partition_4.part_start=disco2.mbr_partition_3.part_start+disco2.mbr_partition_3.part_s+1;
-            }else if(strcmp(disco2.mbr_partition_4.part_name,id)==0){
-                aux=&disco2.mbr_partition_4;
-                (*aux).part_s=(*aux).part_s+tamano; //se esta modificando el struct original para referenciarse en algun atributo usar parentesis (*id).atributo
-            }
-        
-        }else if (OpFdisk>1){//DELETE 
-             if(strcmp(disco2.mbr_partition_1.part_name,id)==0){
-                //size tiene el tamaño en bytes (8 bits)
-                int tam=disco2.mbr_partition_1.part_s; //El tamaño de las particiones estara en bytes
-                int inicio=disco2.mbr_partition_1.part_start;
-                fseek(archivo_bin, inicio, SEEK_SET);
-                char aux='\0';
-                for (size_t i = 0; i < tam; i++)
-                {
-                    fwrite(&aux,sizeof(aux),1,archivo_bin);
-                }
-                disco2.mbr_partition_1=vacioP;
-                fseek(archivo_bin,0,SEEK_SET);
-                fwrite(&disco2,sizeof(disco2),1,archivo_bin);
-                fclose(archivo_bin);
-
-             }else if(strcmp(disco2.mbr_partition_2.part_name,id)==0){
-                int tam=disco2.mbr_partition_2.part_s;
-                int inicio=disco2.mbr_partition_2.part_start;
-                fseek(archivo_bin, inicio, SEEK_SET);
-                char aux='\0';
-                for (size_t i = 0; i < tam; i++)
-                {
-                    fwrite(&aux,sizeof(aux),1,archivo_bin);
-                }
-                disco2.mbr_partition_2=vacioP;
-                fseek(archivo_bin,0,SEEK_SET);
-                fwrite(&disco2,sizeof(disco2),1,archivo_bin);
-                fclose(archivo_bin);
-
-             }else if(strcmp(disco2.mbr_partition_3.part_name,id)==0){
-                int tam=disco2.mbr_partition_3.part_s;
-                int inicio=disco2.mbr_partition_3.part_start;
-                fseek(archivo_bin, inicio, SEEK_SET);
-                char aux='\0';
-                for (size_t i = 0; i < tam; i++)
-                {
-                    fwrite(&aux,sizeof(aux),1,archivo_bin);
-                }
-                disco2.mbr_partition_3=vacioP;
-                fseek(archivo_bin,0,SEEK_SET);
-                fwrite(&disco2,sizeof(disco2),1,archivo_bin);
-                fclose(archivo_bin);
-
-             }else if(strcmp(disco2.mbr_partition_4.part_name,id)==0){
-                int tam=disco2.mbr_partition_4.part_s;
-                int inicio=disco2.mbr_partition_4.part_start;
-                fseek(archivo_bin, inicio, SEEK_SET);
-                char aux='\0';
-                for (size_t i = 0; i < tam; i++)
-                {
-                    fwrite(&aux,sizeof(aux),1,archivo_bin);
-                }
-                disco2.mbr_partition_4=vacioP;
-                fseek(archivo_bin,0,SEEK_SET);
-                fwrite(&disco2,sizeof(disco2),1,archivo_bin);
-                fclose(archivo_bin);
-
-             }
-        }
-    }else
-    {
-        cout << "El archivo a usar con fdisk no existe" << endl;
-    }
-}
 
 //FDISK
 void Comandos::fdisk(char FdiskOption,int s,char u,string path, char tPart,char fit,string name,int add,string _delete)
@@ -372,16 +201,25 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         Structs::Partition extended; //extendida
         for(Structs::Partition prttn: partitions){ //recorrer cada particion recolectada anteriormente
             if(prttn.part_status == '1'){ //estatus l 
+                //start = inicio de la particion
+                //end = fin de la particion
+                //before  (antes)  = start - tam mbr al inicio
+                //base = lo que esta antes de la particion
+                //after = start - end 
+                //used para saber cuantas particiones estan usadas
+
                 Transition trn; //transicion
                 trn.partition = c; //particion1
                 trn.start = prttn.part_start; //inicio
+                //part_s es igual al tamaño,  end = inicio + tamaño de particion
                 trn.end = prttn.part_start + prttn.part_s; //final de la particion
-
+                //before (antes) = inicio - tam MBR
                 trn.before = trn.start - base; //resta entre el inicio de la particion y el tamanio del disco en la primera iteracion
-                base = trn.end; //nuevo valor  (lugar de inicio de la nueva particion)
+                base = trn.end; //se sustituye ahora el valor de base 
 
                 if(used !=0)// SI YA SE MODIFICO LA PARTICION 
                 {
+                    //transicion (between[n]) = start - transicion[n].end
                     between.at(used-1).after = trn.start - (between.at(used-1).end);
                 }
                 between.push_back(trn); //INGRESAR AL VECTOR
@@ -407,7 +245,10 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         
         //BEETWEEN ES UN VECTOR DE TRANSITIONS 
         if (used != 0) {
+            //transicion [n-1]. antes  = disco_tam - transicionv [tamtransicionv -1 ] (ultimapos). end 
+        
             between.at(between.size() - 1).after = disco.mbr_tamano - between.at(between.size() - 1).end;
+        
         }
 
         try {
@@ -427,6 +268,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         
         //LOGICASS---------------------------------------------------
         if (t=='l') {
+            //INGRESA LA PARTICION LOGICA ADENTRO DE LA PARTICION EXTENDIDA 
             logic(newPartition, extended, p);
             return;
         }
@@ -469,6 +311,7 @@ vector<Structs::Partition> Comandos::getPartitions(Structs::MBR disco) {
 Structs::MBR
 
 Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, vector<Structs::Partition> ps, int u) {
+    //u: used  (cuantas particiones llevan usaas )
     if (u == 0) {
         p.part_start = sizeof(mbr);
         startValue = p.part_start;
@@ -683,7 +526,6 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
 //retorna un vector de particiones logicas
 vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p) {
     vector<Structs::EBR> ebrs;
-
     FILE *file = fopen(p.c_str(), "rb+");
     rewind(file);
     Structs::EBR tmp;
