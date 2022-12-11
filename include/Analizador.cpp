@@ -26,7 +26,7 @@ void Analizador::start(){
     //fdisk -name=Particion1 -delete=full -path=/home/brandon/hola2/disco3.dsk
     //fdisk -add=-500 -s=10 -u=K -path=/home/brandon/hola2/disco3.dsk -name=Particion4
     //fdisk -add=1 -u=M -path=/home/brandon/hola2/disco3.dsk -name="Particion 4"
-    
+
     while (entradaCmd!="exit")
     {
         printf("\033c");

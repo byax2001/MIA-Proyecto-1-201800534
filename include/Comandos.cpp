@@ -106,7 +106,7 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     //indicar que el disco fue creado
     int indexDoc = path.rfind("/");
     string nameComandos = path.substr(indexDoc,path.length());
-    cout<<"Disco" <<nameComandos<<" creado con exito!"<<endl;
+    shared.response("MKDISK","Disco "+nameComandos+" creado con exito!");
     FILE *file = fopen(path.c_str(), "w+b");
     fread(&disco, sizeof(disco), 1, archivo_bin);
     cout<<"Tamaño: "<<disco.mbr_tamano<<" bytes"<<endl;
@@ -679,16 +679,18 @@ void Comandos::addpartition(int add, char u, string n, string p) {
         partitions[1] = disk.mbr_partition_2;
         partitions[2] = disk.mbr_partition_3;
         partitions[3] = disk.mbr_partition_4;
-
+        
 
         for (int i = 0; i < 4; i++) {
             if (partitions[i].part_status == '1') {
+                //n = name
                 if (shared.compare(partitions[i].part_name, n)) {
+                    //part_s = tamaño de la particion
+                    //si la particion no esta vacia
                     if ((partitions[i].part_s + (i)) > 0) {
                         if (i != 3) {
                             if (partitions[i + 1].part_start != 0) {
-                                if (((partitions[i].part_s + (i) +
-                                      partitions[i].part_start) <=
+                                if (((partitions[i].part_s + (i) +partitions[i].part_start) <=
                                      partitions[i + 1].part_start)) {
                                     partitions[i].part_s += i;
                                     break;
@@ -697,8 +699,8 @@ void Comandos::addpartition(int add, char u, string n, string p) {
                                 }
                             }
                         }
-                        if ((partitions[i].part_s + i +
-                             partitions[i].part_start) <= disk.mbr_tamano) {
+                        if ((partitions[i].part_s + i +partitions[i].part_start) <= 
+                        disk.mbr_tamano) {
                             partitions[i].part_s += i;
                             break;
                         } else {
