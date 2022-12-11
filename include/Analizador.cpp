@@ -17,7 +17,7 @@ Analizador::Analizador()
 
 void Analizador::start(){
     string entradaCmd="";
-    //mkdisk -s=3000 -u=K -path=/home/brandon/hola2/Disco3.dsk
+    //mkdisk -s=3000 -u=K -path=/home/brandon/hola8/Disco3.dsk
     //rmdisk -path=/home/brandon/hola2/disco3.dsk
     //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-u=K -name=Particion2 -s=300

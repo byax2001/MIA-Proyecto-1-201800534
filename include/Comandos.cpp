@@ -107,7 +107,7 @@ void Comandos::CreateDisk(int tamano, char t_particion, string dim, string path)
     int indexDoc = path.rfind("/");
     string nameComandos = path.substr(indexDoc,path.length());
     shared.response("MKDISK","Disco "+nameComandos+" creado con exito!");
-    FILE *file = fopen(path.c_str(), "w+b");
+    FILE *file = fopen(path.c_str(), "rb+");
     fread(&disco, sizeof(disco), 1, archivo_bin);
     cout<<"Tamaño: "<<disco.mbr_tamano<<" bytes"<<endl;
     cout<<"Fit: "<<disco.dsk_fit<<endl;
