@@ -134,11 +134,13 @@ void Comandos::DeleteFile(string path)
     strcpy(char_path, path.c_str());
     if (remove(char_path) != 0)
     {
-        cout << "Error al eliminar el archivo " << endl;
+        shared.handler("RMDISK","Error al eliminar el archivo ");
+        shared.Pause_press_to_continue();
     }
     else
     {
-        cout << "Se elimino el archivo correctamente" << endl;
+        shared.response("RMDISK","Se elimino el archivo correctamente ");
+        shared.Pause_press_to_continue();
     }
     
 }
@@ -149,14 +151,11 @@ void Comandos::fdisk(char FdiskOption,int s,char u,string path, char tPart,char 
 {
     if(FdiskOption=='c'){
         //s, u, path, t,f
-        generatepartition(s,u,path,tPart,fit,name);
-        shared.response("FDISK","Particion creada");
+        generatepartition(s,u,path,tPart,fit,name); 
     }else if(FdiskOption=='c'){
         addpartition(add,u,name,path);
-        shared.response("FDISK","Aumento de Particion exitosa");
     }else{
         deletepartition(_delete,path,name);
-        shared.response("FDISK","Eliminacion de Particion");
     }
     shared.Pause_press_to_continue();//presione cualquier tecla para continuar
 

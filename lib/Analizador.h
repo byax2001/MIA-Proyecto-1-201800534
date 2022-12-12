@@ -10,6 +10,7 @@
 #include <vector>
 #include "../lib/Comandos.h"
 #include "../lib/Mount.h"
+#include "../lib/shared.h"
 #include <fstream>
 #include <iostream>
 using namespace std; 
@@ -29,6 +30,7 @@ public:
     void print(string s);
 private:
     Mount mount;
+    Shared shared;
 };
 
 #endif

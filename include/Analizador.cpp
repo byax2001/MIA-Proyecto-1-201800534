@@ -209,21 +209,33 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
     } else if(comando.compare("mount")==0){
-    
+        //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion1
         for(int i=0; i<parametros.size(); i++){
             param = parametros.at(i);
+            print("HOLAAAAAASSDX");
+            print(param);
+            bool t = param.find("-path")==0;
+            cout<<t<<endl;
             if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                print("PANFASLF");
                 param = replace_txt(param, "-path=", "");
                 param = replace_txt(param, "\"", "");
                 cmd.param.path = param;
-            }else if(param.find("-name=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+            }else if(param.find("-name=") != string::npos){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                printf("holaaaa ESOTY EN NAME");
                 param = replace_txt(param, "-name=", "");
                 param = replace_txt(param, "\"", "");
                 cmd.param.name=param;
             }
         }
-        cmd.param.Comando = "mount";
-        cmd.ejecutarInst(cmd.param);
+        if (cmd.param.name != ""){
+            mount.mount(cmd.param.path,cmd.param.name);
+            shared.Pause_press_to_continue();
+        }else{
+            mount.listmount();
+            shared.Pause_press_to_continue();
+        }
+       
     }else if(comando.compare("unmount")==0){
         for(int i=0; i<parametros.size(); i++){
             param = parametros.at(i);
@@ -234,7 +246,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
             }
         }
         cmd.param.Comando = "unmount";
-        cmd.ejecutarInst(cmd.param);
+        mount.unmount(cmd.param.id);
     }else if(comando.compare("exec")==0){
         cmd.param.Comando = "exec";
         for(int i=0; i<parametros.size(); i++){

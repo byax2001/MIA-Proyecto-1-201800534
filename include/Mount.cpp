@@ -7,8 +7,8 @@
 
 using namespace std;
 Mount::Mount(){
-
 }
+
 void Mount::mount(vector<string> context) {
     if (context.empty()) {
         listmount();
