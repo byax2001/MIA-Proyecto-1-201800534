@@ -51,6 +51,7 @@ void Shared::handler(string title, string message)
     cout << "\033[1;31m Error: \033"
          << "\033[0;31m(" + title + ")~> \033[0m"
          << message << endl;
+    Pause_press_to_continue();
 }
 
 bool Shared::confirmation(string title, string message)

@@ -23,6 +23,10 @@ void Mount::mount(vector<string> context) {
         if (current.substr(0, 1) == "\"") {
             current = current.substr(1, current.length() - 2);
         }
+        if(id[0]=='-'){
+            id=id.substr(1, current.length() - 1);
+        }
+        printf(id.c_str());
 
         if (shared.compare(id, "name")) {
             if (count(required.begin(), required.end(), id)) {
@@ -80,6 +84,7 @@ void Mount::mount(string p, string n) {
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
+                        shared.Pause_press_to_continue();
                         return;
                     }
                 }
@@ -96,6 +101,7 @@ void Mount::mount(string p, string n) {
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
+                        shared.Pause_press_to_continue();
                         return;
                     }
                 }
@@ -152,6 +158,7 @@ void Mount::unmount(string id) {
                     MountedPartition mp = MountedPartition();
                     mounted[i].mpartitions[j] = mp;
                     shared.response("UNMOUNT", "se ha realizado correctamente el unmount -id=" + past);
+                    shared.Pause_press_to_continue();
                     return;
                 }
             }
