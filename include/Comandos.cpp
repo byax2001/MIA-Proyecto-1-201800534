@@ -17,6 +17,10 @@ void Comandos::ejecutarInst(Parametros p)
     }
     else if (p.Comando == "fdisk")
     {
+        
+        if(p.dimensional!='k' || p.dimensional!='m' || p.dimensional !='b'){
+            shared.handler("FDISK","Error la dimensional no tiene parametros correctos ");
+        }
         fdisk(p.opcionFdisk,p.tamano,p.dimensional,p.path,p.typePartition,p.fit,p.name,p.add,p._delete);
     }
     else if (p.Comando == "rmdisk")
@@ -135,12 +139,10 @@ void Comandos::DeleteFile(string path)
     if (remove(char_path) != 0)
     {
         shared.handler("RMDISK","Error al eliminar el archivo ");
-        shared.Pause_press_to_continue();
     }
     else
     {
         shared.response("RMDISK","Se elimino el archivo correctamente ");
-        shared.Pause_press_to_continue();
     }
     
 }
@@ -256,13 +258,13 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         //BEETWEEN ES UN VECTOR DE TRANSITIONS 
         if (used != 0) {
             //transicion [n-1]. antes  = disco_tam - transicionv [tamtransicionv -1 ] (ultimapos). end 
-        
             between.at(between.size() - 1).after = disco.mbr_tamano - between.at(between.size() - 1).end;
-        
         }
 
         try {
-            //N: ame   p: path
+            //SE MANDA A USAR ESTE METODO SI TRUENA EL NOMBRE NO ESTA EN USO  POR LO QUE 
+            //OCURRIRA UN ERROR QUE ATRAPARA EL CATCH Y SEGUIRA DE FORMA NORMAL EL PROGRMA
+            //SI NO TRUENA ENTONCES EL NOMBRE YA ESTA EN USO
             findby(disco, n, p);
             shared.handler("FDISK", " Este nombre ya esta en uso");
             return;
@@ -282,7 +284,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
             logic(newPartition, extended, p);
             return;
         }
-        //DISCO == MBR 
+        //METER NUEVA PARTICION AL MBR  
         disco = adjust(disco, newPartition, between, partitions, used); 
 
         FILE *bfile = fopen(p.c_str(), "rb+");

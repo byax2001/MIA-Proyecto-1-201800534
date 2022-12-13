@@ -72,6 +72,7 @@ void Shared::response(string title, string message)
 {
     cout << "\033[0;32m (" + title + "): \033[0m"
          << message << endl;
+    Pause_press_to_continue();
 }
 void Shared::Pause_press_to_continue(){
     string aux;

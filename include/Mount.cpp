@@ -216,8 +216,9 @@ void Mount::listmount() {
     for (int i = 0; i < 99; i++) { //discos montados
         for (int j = 0; j < 26; j++) { //particiones por cada disco
             if (mounted[i].mpartitions[j].status == '1') {
-                cout << "> 87" << i + 1 << alfabeto.at(j) << ", " << mounted[i].mpartitions[j].name << endl;
+                cout << "> 54" << i + 1 << alfabeto.at(j) << ", " << mounted[i].mpartitions[j].name << endl;
             }
         }
     }
+    shared.Pause_press_to_continue();
 }

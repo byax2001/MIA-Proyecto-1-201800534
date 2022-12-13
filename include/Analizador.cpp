@@ -209,7 +209,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
     } else if(comando.compare("mount")==0){
-        //mount --path=/home/brandon/hola2/disco3.dsk -name=Particion1
+        //mount -path=/home/brandon/hola2/disco3.dsk -name=Particion1
         mount.mount(parametros);
        
     }else if(comando.compare("unmount")==0){
