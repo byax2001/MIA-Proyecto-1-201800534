@@ -188,8 +188,9 @@ void Reporte::MBR_EBR(Mount::_MD mounted, string pathf)
     system(comandof.c_str());
 }
 
-void Reporte::Disk(Mount::_MD mounted,string pathf){
-//CON EL PATH DEL DISCO MONTADO SE SELECCIONA EL DISCO Y SE OBTIENEN TODOS LOS DATOS PARA EL GRAFICO
+void Reporte::Disk(Mount::_MD mounted, string pathf)
+{
+    // CON EL PATH DEL DISCO MONTADO SE SELECCIONA EL DISCO Y SE OBTIENEN TODOS LOS DATOS PARA EL GRAFICO
     ofstream archivo;
     string name_final = pathf;
     string arch_dot = pathf.substr(0, sizeof(pathf) - 3) + "dot";
@@ -202,20 +203,22 @@ void Reporte::Disk(Mount::_MD mounted,string pathf){
     }
 
     char path[150];
-    strcpy(path,mounted.path);
+    strcpy(path, mounted.path);
     FILE *validate = fopen(path, "r");
-    if (validate == NULL) {
-        shared.handler("REP","Disco no existe");
+    if (validate == NULL)
+    {
+        shared.handler("REP", "Disco no existe");
         return;
     }
 
     Structs::MBR disk;
-    //PONE EL BUFFER AL INICIO EL DOCUMENTO
+    // PONE EL BUFFER AL INICIO EL DOCUMENTO
     rewind(validate);
-    //leer documento
+    // leer documento
     fread(&disk, sizeof(Structs::MBR), 1, validate);
     fclose(validate);
-                //GRAPH- INIT ------------------------------------------
+    // GRAPH- INIT ------------------------------------------
+    int mbr_tamano = disk.mbr_tamano;
     archivo << "digraph DiskG{\n";
     archivo << "node [shape=plaintext, fontname=Arial]\n";
     archivo << "tabla [label=<<TABLE BORDER=\"1\" CELLBORDER=\"1\" CELLSPACING=\"1\">\n";
@@ -228,39 +231,51 @@ void Reporte::Disk(Mount::_MD mounted,string pathf){
     partitions.push_back(disk.mbr_partition_2);
     partitions.push_back(disk.mbr_partition_3);
     partitions.push_back(disk.mbr_partition_4);
+
+    int inicio_aux=0;
     
 
     for (size_t i = 0; i < 4; i++)
     {
-        //ES PRINCIPAL O EXTENDIDA
+        // ES PRINCIPAL O EXTENDIDA
         Structs::Partition pAct = partitions[i];
         int part_start = pAct.part_start;
         int part_size = pAct.part_s;
 
         if (partitions[i].part_type != 'p')
         {
-            //GRAFICAR LOGICAS
-            //EBR SON LAS LOGICAS
+            // GRAFICAR LOGICAS
+            // EBR SON LAS LOGICAS
             vector<Structs::EBR> Logicas;
-            Logicas = comandos.getlogics(pAct,path);
+            Logicas = comandos.getlogics(pAct, path);
             for (size_t i = 0; i < sizeof(Logicas); i++)
             {
                 Structs::EBR LogAct = Logicas[i];
                 int part_next = LogAct.part_next;
                 int part_start = LogAct.part_start;
                 int part_size = LogAct.part_s;
-            
             }
+        }
+        else
+        {   
+            string aux;
+            archivo << "label=<<table border="+ to_string(1)+" cellborder=" +to_string(0)+ " cellspacing="+ '1' +">";
 
+            float porcentaje = (partitions[i].part_s/mbr_tamano) * 100;
+            archivo<<"<tr><td align=\"left\"><b>Principal</b></td></tr>";
+            archivo<<"<tr><td align=\"left\"><b>"+to_string(porcentaje)+"  % </b></td></tr>";
+            archivo<< "<tr><td align=\"left\">  del Disco </td></tr>";
+     
+   
+   </table>>];
         }
     }
     archivo << "</TR>\n";
     archivo << "</TABLE>>];\n";
     archivo << "}";
     archivo.close();
-    string comandof = "dot -Tpng \"" + arch_dot + "\" -o \"" + name_final+"\"";
+    string comandof = "dot -Tpng \"" + arch_dot + "\" -o \"" + name_final + "\"";
     system(comandof.c_str());
-
 }
 
 /*
