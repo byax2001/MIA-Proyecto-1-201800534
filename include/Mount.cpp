@@ -74,14 +74,16 @@ void Mount::mount(string p, string n) {
                 throw runtime_error("no se puede montar una extendida");
             }
         }
-
+        //recorrer los 99 discos montados
         for (int i = 0; i < 99; i++) {
             if (mounted[i].path == p) {
+                //recorrer las 26 particiones de cada disco
                 for (int j = 0; j < 26; j++) {
                     if (Mount::mounted[i].mpartitions[j].status == '0') {
                         mounted[i].mpartitions[j].status = '1';
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
+                        //numero de disco montado+1 + letra 
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         shared.Pause_press_to_continue();
@@ -90,15 +92,18 @@ void Mount::mount(string p, string n) {
                 }
             }
         }
+        //recorrer los 99 discos montados
         for (int i = 0; i < 99; i++) {
             if (mounted[i].status == '0') {
                 mounted[i].status = '1';
                 strcpy(mounted[i].path, p.c_str());
+                //recorrer las 26 particiones
                 for (int j = 0; j < 26; j++) {
                     if (Mount::mounted[i].mpartitions[j].status == '0') {
                         mounted[i].mpartitions[j].status = '1';
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
+                        //numero de disco montado+1 + letra 
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         shared.Pause_press_to_continue();
@@ -138,6 +143,7 @@ void Mount::unmount(vector<string> context) {
 
 void Mount::unmount(string id) {
     try {
+
         //2018005 34
         if (!(id[0] == '3' && id[1] == '4')) {
             throw runtime_error("el primer identificador no es válido");
@@ -146,12 +152,15 @@ void Mount::unmount(string id) {
         char letter = id[id.length() - 1];
         id.erase(0, 2); //borrar los primeros dos digitos
         id.pop_back();
+        //PARA SABER A QUE DISCO SE REFIERE, POSICIONADO EN UNA PARTE DEL ARRAY IGUAL A N - 1
         int i = stoi(id) - 1;
+
         if (i < 0) {
             throw runtime_error("identificador de disco inválido");
         }
 
         for (int j = 0; j < 26; j++) {
+            //EL VALOR DE I SE SABE CON EL NUMERO EN EL NOMBRE DE LA PARTICION MONTADA
             if (mounted[i].mpartitions[j].status == '1') {
                 if (mounted[i].mpartitions[j].letter == letter) {
 

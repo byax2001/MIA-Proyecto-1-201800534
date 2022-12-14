@@ -414,11 +414,14 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                 }
             }
             Structs::Partition partitions[4];
+            
+            //ps: partitions mandados desde la llamada
             for (int i = 0; i < ps.size(); i++) {
                 partitions[i] = ps.at(i);
             }
             for (auto &partition : partitions) {
                 if (partition.part_status == '0') {
+                    //disco libre mas cercano del array partitions que no es igual a ps 
                     partition = p;
                     break;
                 }
