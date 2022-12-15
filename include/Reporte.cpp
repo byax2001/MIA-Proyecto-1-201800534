@@ -45,7 +45,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     cout<<arch_dot<<" FILE REP "<<endl;
     Structs::MBR disk = mount.getDisk(id,&pathf);
     char path[150];
-    cout<<arch_dot<<" FILE REP "<<endl;
+    cout<<arch_dot<<" FILE REP 2AAAAAA"<<endl;
     strcpy(path, pathf.c_str());
     // REPORTE MBR
     // tamaño
@@ -57,7 +57,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     strftime(mbr_fecha_creacion, 20, "%Y/%m/%d %H:%M:%S", tm);
     // signature
     int mbr_signature = disk.mbr_dsk_signature;
-
+    cout<<arch_dot<<" FILE REP 2AAAAA333A"<<endl;
     archivo << "digraph RepMEBR{\n";
     archivo << "node [shape=plaintext, fontname=Arial]\n";
     archivo << "tabla [label=<<TABLE BORDER=\"1\" CELLBORDER=\"1\" CELLSPACING=\"1\">\n";
@@ -77,7 +77,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     archivo << "<TD PORT=\"c\" >mbr_fsignature</TD>\n";
     archivo << "<TD PORT=\"c\" >" + to_string(mbr_signature) + "</TD>\n";
     archivo << "</TR>\n";
-
+    cout<<arch_dot<<" FILE REP 5aaaAAA333A"<<endl;
     vector<Structs::Partition> partitions;
 
     partitions.push_back(disk.mbr_partition_1);
@@ -85,7 +85,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     partitions.push_back(disk.mbr_partition_3);
     partitions.push_back(disk.mbr_partition_4);
 
-    for (size_t i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
         // ES PRINCIPAL O EXTENDIDA
         Structs::Partition pAct = partitions[i];
@@ -98,7 +98,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
         strcpy(part_name, pAct.part_name);
 
         archivo << "<TR>\n";
-        archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\"Particion</TD>\n";
+        archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\">Particion</TD>\n";
         archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\"> </TD>\n";
         archivo << "</TR>\n";
         archivo << "<TR>\n";
@@ -123,25 +123,25 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
         archivo << "</TR>\n";
 
         archivo << "<TR>\n";
-        archivo << "<TD PORT=\"c\" >part_size/TD>\n";
+        archivo << "<TD PORT=\"c\" >part_size</TD>\n";
         archivo << "<TD PORT=\"c\" >" + to_string(part_size) + "</TD>\n";
         archivo << "</TR>\n";
 
         archivo << "<TR>\n";
-        archivo << "<TD PORT=\"c\" >part_name/TD>\n";
+        archivo << "<TD PORT=\"c\" >part_name </TD>\n";
         string str(part_name);
         archivo << "<TD PORT=\"c\" >" + str + "</TD>\n";
         archivo << "</TR>\n";
 
-        if (partitions[i].part_type != 'p')
+        if (pAct.part_type == 'e')
         {
             // GRAFICAR LOGICAS
             // EBR SON LAS LOGICAS
             vector<Structs::EBR> Logicas;
             Logicas = comandos.getlogics(pAct, path);
-            for (size_t i = 0; i < sizeof(Logicas); i++)
+            for (int j = 0; j < sizeof(Logicas); j++)
             {
-                Structs::EBR LogAct = Logicas[i];
+                Structs::EBR LogAct = Logicas[j];
                 char part_status = LogAct.part_status;
                 int part_next = LogAct.part_next;
                 char part_fit = LogAct.part_fit;
@@ -193,6 +193,10 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     archivo << "}";
     archivo.close();
     string comandof = "dot -Tpng " + arch_dot + " -o " + name_final;
+    cout<<"ARCH DOT "<<arch_dot;
+    cout<<"NAME FINAL: "<<name_final;
+    cout<<"COMANDO consola "<<comandof;
+    shared.response("REP","Creacion de reporte correcto");
     system(comandof.c_str());
 }
 
@@ -360,50 +364,13 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
     archivo << "}";
     archivo.close();
     string comandof = "dot -Tpng \"" + arch_dot + "\" -o \"" + name_final + "\"";
+    cout<<"ARCH DOT "<<arch_dot;
+    cout<<"NAME FINAL: "<<name_final;
+    cout<<"COMANDO consola "<<comandof;
+    shared.response("REP","Creacion de reporte correcto");
     system(comandof.c_str());
 }
 
-Structs::MBR Mount::getDisk(string id, string *p) {
-
-    if (!(id[0] == '3' && id[1] == '4')) {
-        throw runtime_error("el primer identificador no es válido");
-    }
-     
-    
-    string past = id;
-    char letter = id[id.length() - 1];
-    id.erase(0, 2);
-    id.pop_back();
-    int i = stoi(id) - 1;
-
-    if (i < 0) {
-        throw runtime_error("identificador de disco inválido");
-    }
-    cout<<" PRUEBA identificador disco invalido "<<i<<" "<<mounted[0].mpartitions[0].status <<endl;
-    listmount();
-    for (int j = 0; j < 26; j++) {
-         cout<<" FILE REP ANTES FOPNE BUCLE "<<mounted[i].mpartitions[j].status<<endl;
-        if (mounted[i].mpartitions[j].status == '1') {
-             cout<<" ******************************"<<endl;
-            if (mounted[i].mpartitions[j].letter == letter) {
-                cout<<" FILE REP ANTES FOPNE"<<endl;
-                FILE *validate = fopen(mounted[i].path, "r");
-                if (validate == NULL) {
-                    cout<<" FILE REP DESPUES FOPNE"<<endl;
-                    throw runtime_error("disco no existente");
-                }
-
-                Structs::MBR disk;
-                rewind(validate);
-                fread(&disk, sizeof(Structs::MBR), 1, validate);
-                fclose(validate);
-                *p = mounted[i].path;
-                return disk;
-            }
-        }
-    }
-    throw runtime_error("partición no existente");
-}
 
 /*
 
