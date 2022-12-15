@@ -127,6 +127,8 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
     //mount -path=/home/brandon/hola2/disco3.dsk -name=Particion2
     //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion3
     //rep -id=341a -Path=/home/brandon/reports/reporte1.jpg -name=mbr
+    //rep -id=341a -Path=/home/brandon/reports/reporte1v2.jpg -name=disk
+    //rep -id=341a -Path=/home/brandon/reports/reporte1v2.jpg -name=disk
     //rep -id=341b -Path=/home/brandon/reports/report2.pdf -name=disk
 
 
