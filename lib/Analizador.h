@@ -11,9 +11,9 @@
 #include "../lib/Comandos.h"
 #include "../lib/Mount.h"
 #include "../lib/shared.h"
+#include "../lib/Reporte.h"
 #include <fstream>
 #include <iostream>
-#include <Reporte.h>
 using namespace std; 
 
 class Analizador

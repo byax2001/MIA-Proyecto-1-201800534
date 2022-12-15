@@ -40,12 +40,12 @@ class Mount {
     void listmount();
 
     Structs::Partition getmount(string id, string *p);
-    Structs::MBR Mount::getDisk(string id, string *p);
+    Structs::MBR getDisk(string id, string *p);
 
     private:
-    Comandos dsk;
-    Shared shared;
-    vector<char> alfabeto = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+        Comandos dsk;
+        Shared shared;
+        vector<char> alfabeto = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
                              's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 };
 #endif

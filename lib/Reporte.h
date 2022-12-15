@@ -2,12 +2,12 @@
 #define REPORTE_H
 #include <string>
 #include <bits/stdc++.h>
-#include <Comandos.h>
-#include <shared.h>
-#include <structs.h>
-#include <Mount.h>
-#include <Comandos.h>
-#include <Mount.h>
+#include "../lib/Comandos.h"
+#include "../lib/Mount.h"
+#include "../lib/shared.h"
+#include "../lib/structs.h"
+
+
 
 using namespace std;
 class Reporte{
