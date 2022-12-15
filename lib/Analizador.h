@@ -12,6 +12,7 @@
 #include "../lib/Mount.h"
 #include "../lib/shared.h"
 #include "../lib/Reporte.h"
+#include "../lib/structs.h"
 #include <fstream>
 #include <iostream>
 using namespace std; 

@@ -341,7 +341,6 @@ void Reporte::DiskRep(string id,string pathf)
     string comandof = "dot -Tpng \"" + arch_dot + "\" -o \"" + name_final + "\"";
     system(comandof.c_str());
 }
-
 /*
 
 void Reporte::MBR_EBR(Mount::_MD mounted,string pathf){
