@@ -17,7 +17,7 @@ Analizador::Analizador()
 
 void Analizador::start(){
     string entradaCmd="";
-    //mkdisk -s=3000 -u=K -path=/home/brandon/hola8/Disco3.dsk
+    //mkdisk -s=3500 -u=K -path=/home/brandon/hola2/Disco3.dsk
     //rmdisk -path=/home/brandon/hola2/disco3.dsk
     //fdisk -s=300 -path=/home/Disco1.dsk -name=Particion1
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-u=K -name=Particion2 -s=300
@@ -27,6 +27,7 @@ void Analizador::start(){
     //fdisk -name=Particion1 -delete=full -path=/home/brandon/hola2/disco3.dsk
     //fdisk -add=-500 -s=10 -u=K -path=/home/brandon/hola2/disco3.dsk -name=Particion4
     //fdisk -add=1 -u=M -path=/home/brandon/hola2/disco3.dsk -name="Particion 4"
+    //mount 
 
     while (entradaCmd!="exit")
     {
@@ -119,11 +120,11 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
     string param = "";
 
 
-     //mkdisk -s=3000 -u=K -path=/home/brandon/hola2/Disco3.dsk
+     //mkdisk -s=4000 -u=K -path=/home/brandon/hola2/Disco3.dsk
     //rmdisk -path=/home/brandon/hola2/disco3.dsk
     //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
-    //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion1
-    //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion2
+    //mount -path=/home/brandon/hola2/disco3.dsk -name=Particion1
+    //mount -path=/home/brandon/hola2/disco3.dsk -name=Particion2
     //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion3
     //rep -id=341a -Path=/home/brandon/reports/reporte1.jpg -name=mbr
     //rep -id=341b -Path=/home/brandon/reports/report2.pdf -name=disk
@@ -179,7 +180,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
             }else if(param.find("-u=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
                 param = replace_txt(param, "-u=", "");
                 param = replace_txt(param, "\"", "");
-                cmd.param.u = param;
+                cmd.param.u= param;
             }else if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
                 param = replace_txt(param, "-path=", "");
                 param = replace_txt(param, "\"", "");
@@ -270,9 +271,9 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
             }
         }
         if (cmd.param.name=="mbr"){
-            reporte.MBR_EBR(cmd.param.id,cmd.param.path);
+            reporte.MBR_EBR(cmd.param.id,cmd.param.path,mount);
         }else if (cmd.param.name=="disk"){
-            reporte.DiskRep(cmd.param.id,cmd.param.path);
+            reporte.DiskRep(cmd.param.id,cmd.param.path,mount);
         }else{
             shared.handler("REP","Tipo de reporte no registrado");
         }

@@ -16,10 +16,15 @@ void Comandos::ejecutarInst(Parametros p)
         CreateDisk(p.tamano, p.ajuste_particion, p.dimensional, p.path);
     }
     else if (p.Comando == "fdisk")
-    {
+    {   
+
+        string a = "XDXXDDDD";
+        a=to_string(p.dimensional);
+        printf(a.c_str());
         
-        if(p.dimensional!='k' || p.dimensional!='m' || p.dimensional !='b'){
+        if(p.dimensional!='k' && p.dimensional!='m' && p.dimensional !='b'){
             shared.handler("FDISK","Error la dimensional no tiene parametros correctos ");
+            return;
         }
         fdisk(p.opcionFdisk,p.tamano,p.dimensional,p.path,p.typePartition,p.fit,p.name,p.add,p._delete);
     }
@@ -159,7 +164,6 @@ void Comandos::fdisk(char FdiskOption,int s,char u,string path, char tPart,char 
     }else{
         deletepartition(_delete,path,name);
     }
-    shared.Pause_press_to_continue();//presione cualquier tecla para continuar
 
 }
 

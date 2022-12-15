@@ -7,24 +7,45 @@
 
 using namespace std;
 
-Reporte::Reporte() {}
+Reporte::Reporte() {
+}
 
-void Reporte::MBR_EBR(string id, string pathf)
-{
-    ofstream archivo;
+void Reporte::crearDirectorio(string path){
+    FILE *archivo_bin;
+    archivo_bin = fopen(path.c_str(), "w");
+    if (archivo_bin == NULL)
+    {   // si es nulo es que el directorio no ha sido creado
+        // creo directorio
+        // cout<<"Direccion: "<<path<<" :)"<<endl;
+        string comando1 = "mkdir -p \"" + path + "\"";
+        string comando2 = "rmdir \"" + path + "\"";
+        system(comando1.c_str());
+        system(comando2.c_str());
+        FILE *file = fopen(path.c_str(), "w+b");
+        fclose(file);
+    }
+    else
+    {
+        fclose(archivo_bin);
+    }
+}
+
+void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     string name_final = pathf;
-    string arch_dot = pathf.substr(0, sizeof(pathf) - 3) + "dot";
-
+    string arch_dot = pathf.substr(0, sizeof(pathf) - 1) + "dot";
+    cout<<arch_dot<<" FILE REP "<<endl;
+    crearDirectorio(arch_dot);
+    ofstream archivo;
     archivo.open(arch_dot, ios::out);
     if (archivo.fail())
     {
         shared.handler("REP", "No se pudo crear el reporte de particiones");
         exit(1);
     }
-    
+    cout<<arch_dot<<" FILE REP "<<endl;
     Structs::MBR disk = mount.getDisk(id,&pathf);
     char path[150];
-    
+    cout<<arch_dot<<" FILE REP "<<endl;
     strcpy(path, pathf.c_str());
     // REPORTE MBR
     // tamaño
@@ -175,13 +196,13 @@ void Reporte::MBR_EBR(string id, string pathf)
     system(comandof.c_str());
 }
 
-void Reporte::DiskRep(string id,string pathf)
+void Reporte::DiskRep(string id,string pathf, Mount mount)
 {
     // CON EL PATH DEL DISCO MONTADO SE SELECCIONA EL DISCO Y SE OBTIENEN TODOS LOS DATOS PARA EL GRAFICO
     ofstream archivo;
     string name_final = pathf;
-    string arch_dot = pathf.substr(0, sizeof(pathf) - 3) + "dot";
-
+    string arch_dot = pathf.substr(0, sizeof(pathf) - 1) + "dot";
+    cout<<arch_dot<<" FILE REP "<<endl;
     archivo.open(arch_dot, ios::out);
     if (archivo.fail())
     {
@@ -341,6 +362,49 @@ void Reporte::DiskRep(string id,string pathf)
     string comandof = "dot -Tpng \"" + arch_dot + "\" -o \"" + name_final + "\"";
     system(comandof.c_str());
 }
+
+Structs::MBR Mount::getDisk(string id, string *p) {
+
+    if (!(id[0] == '3' && id[1] == '4')) {
+        throw runtime_error("el primer identificador no es válido");
+    }
+     
+    
+    string past = id;
+    char letter = id[id.length() - 1];
+    id.erase(0, 2);
+    id.pop_back();
+    int i = stoi(id) - 1;
+
+    if (i < 0) {
+        throw runtime_error("identificador de disco inválido");
+    }
+    cout<<" PRUEBA identificador disco invalido "<<i<<" "<<mounted[0].mpartitions[0].status <<endl;
+    listmount();
+    for (int j = 0; j < 26; j++) {
+         cout<<" FILE REP ANTES FOPNE BUCLE "<<mounted[i].mpartitions[j].status<<endl;
+        if (mounted[i].mpartitions[j].status == '1') {
+             cout<<" ******************************"<<endl;
+            if (mounted[i].mpartitions[j].letter == letter) {
+                cout<<" FILE REP ANTES FOPNE"<<endl;
+                FILE *validate = fopen(mounted[i].path, "r");
+                if (validate == NULL) {
+                    cout<<" FILE REP DESPUES FOPNE"<<endl;
+                    throw runtime_error("disco no existente");
+                }
+
+                Structs::MBR disk;
+                rewind(validate);
+                fread(&disk, sizeof(Structs::MBR), 1, validate);
+                fclose(validate);
+                *p = mounted[i].path;
+                return disk;
+            }
+        }
+    }
+    throw runtime_error("partición no existente");
+}
+
 /*
 
 void Reporte::MBR_EBR(Mount::_MD mounted,string pathf){

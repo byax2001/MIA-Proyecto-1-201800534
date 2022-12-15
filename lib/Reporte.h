@@ -14,13 +14,14 @@ class Reporte{
     public:
         Reporte();
         Mount::_MD mountedDisk;
-        void MBR_EBR(string id, string pathf);
-        void DiskRep(string id,string pathf);
+        void MBR_EBR(string id, string pathf, Mount mount);
+        void DiskRep(string id,string pathf, Mount mount);
+        void crearDirectorio(string path);
+        Structs::MBR getDisk(string id, string *p);
     private:
         Shared shared;
         Structs _struct;
         Comandos comandos;
-        Mount mount;
 };
 
 
