@@ -125,7 +125,8 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
     //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion1
     //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion2
     //mount -path=/home/brandon/hola2/disco3.dsk –name=Particion3
-    //mount 
+    //rep -id=341a -Path=/home/brandon/reports/reporte1.jpg -name=mbr
+    //rep -id=341b -Path=/home/brandon/reports/report2.pdf -name=disk
 
 
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk -u=K -name=Particion2 -s=300
@@ -251,6 +252,29 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
             cmd.ejecutarInst(cmd.param);  //SE MANDA A EJECUTAR EL METODO       
         }else{
             cout<<"Error: faltan parametros"<<endl;
+        }
+    }else if(comando.compare("rep")==0){
+        for(int i=0; i<parametros.size(); i++){
+            param = parametros.at(i);
+            if(param.find("-id=")==0){
+                param=replace_txt(param,"-id=",""); 
+                cmd.param.id=param;
+            }else if(param.find("-name=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-name=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.name = param;
+            }else if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
+                param = replace_txt(param, "-path=", "");
+                param = replace_txt(param, "\"", "");
+                cmd.param.path = param;
+            }
+        }
+        if (cmd.param.name=="mbr"){
+            reporte.MBR_EBR(cmd.param.id,cmd.param.path);
+        }else if (cmd.param.name=="disk"){
+            reporte.DiskRep(cmd.param.id,cmd.param.path);
+        }else{
+            shared.handler("REP","Tipo de reporte no registrado");
         }
     }else if(comando.compare("exit")==0){
         cout<<"Exit"<<endl;

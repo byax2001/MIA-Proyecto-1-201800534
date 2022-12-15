@@ -40,6 +40,7 @@ class Mount {
     void listmount();
 
     Structs::Partition getmount(string id, string *p);
+    Structs::MBR Mount::getDisk(string id, string *p);
 
     private:
     Comandos dsk;

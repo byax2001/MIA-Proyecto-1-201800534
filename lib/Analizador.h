@@ -13,6 +13,7 @@
 #include "../lib/shared.h"
 #include <fstream>
 #include <iostream>
+#include <Reporte.h>
 using namespace std; 
 
 class Analizador
@@ -31,6 +32,7 @@ public:
 private:
     Mount mount;
     Shared shared;
+    Reporte reporte;
 };
 
 #endif

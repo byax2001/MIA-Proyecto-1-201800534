@@ -7,18 +7,20 @@
 #include <structs.h>
 #include <Mount.h>
 #include <Comandos.h>
+#include <Mount.h>
 
 using namespace std;
 class Reporte{
     public:
         Reporte();
-        void graph(vector<Structs::Partition> partitions,Structs::MBR mbr);
-        void MBR_EBR(Mount:: _MD mounted, string pathf);
-        void Disk(Mount:: _MD mounted, string pathf);
+        Mount::_MD mountedDisk;
+        void MBR_EBR(string id, string pathf);
+        void DiskRep(string id,string pathf);
     private:
         Shared shared;
         Structs _struct;
         Comandos comandos;
+        Mount mount;
 };
 
 

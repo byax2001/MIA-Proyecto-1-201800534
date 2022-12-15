@@ -9,7 +9,7 @@ using namespace std;
 
 Reporte::Reporte() {}
 
-void Reporte::MBR_EBR(Mount::_MD mounted, string pathf)
+void Reporte::MBR_EBR(string id, string pathf)
 {
     ofstream archivo;
     string name_final = pathf;
@@ -21,24 +21,11 @@ void Reporte::MBR_EBR(Mount::_MD mounted, string pathf)
         shared.handler("REP", "No se pudo crear el reporte de particiones");
         exit(1);
     }
-
-    // CON EL PATH DEL DISCO MONTADO SE SELECCIONA EL DISCO Y SE OBTIENEN TODOS LOS DATOS PARA EL GRAFICO
+    
+    Structs::MBR disk = mount.getDisk(id,&pathf);
     char path[150];
-    strcpy(path, mounted.path);
-    FILE *validate = fopen(path, "r");
-    if (validate == NULL)
-    {
-        shared.handler("REP", "Disco no existe");
-        return;
-    }
-
-    Structs::MBR disk;
-    // PONE EL BUFFER AL INICIO EL DOCUMENTO
-    rewind(validate);
-    // leer documento
-    fread(&disk, sizeof(Structs::MBR), 1, validate);
-    fclose(validate);
-
+    
+    strcpy(path, pathf.c_str());
     // REPORTE MBR
     // tamaño
     int mbr_tamano = disk.mbr_tamano;
@@ -188,7 +175,7 @@ void Reporte::MBR_EBR(Mount::_MD mounted, string pathf)
     system(comandof.c_str());
 }
 
-void Reporte::Disk(Mount::_MD mounted, string pathf)
+void Reporte::DiskRep(string id,string pathf)
 {
     // CON EL PATH DEL DISCO MONTADO SE SELECCIONA EL DISCO Y SE OBTIENEN TODOS LOS DATOS PARA EL GRAFICO
     ofstream archivo;
@@ -202,21 +189,11 @@ void Reporte::Disk(Mount::_MD mounted, string pathf)
         exit(1);
     }
 
+    Structs::MBR disk = mount.getDisk(id,&pathf);
     char path[150];
-    strcpy(path, mounted.path);
-    FILE *validate = fopen(path, "r");
-    if (validate == NULL)
-    {
-        shared.handler("REP", "Disco no existe");
-        return;
-    }
 
-    Structs::MBR disk;
-    // PONE EL BUFFER AL INICIO EL DOCUMENTO
-    rewind(validate);
-    // leer documento
-    fread(&disk, sizeof(Structs::MBR), 1, validate);
-    fclose(validate);
+    strcpy(path, pathf.c_str());
+    
     // GRAPH- INIT ------------------------------------------
     int mbr_tamano = disk.mbr_tamano;
     archivo << "digraph DiskG{\n";
@@ -284,9 +261,8 @@ void Reporte::Disk(Mount::_MD mounted, string pathf)
                 archivo << "<tr><td align=\"left\">  del Disco </td></tr>";
                 archivo << "</td>";
             }
-        }
-        else
-        {
+        }else{
+            //inicio_deb = la particion actual deberia de iniciar aqui
             int inicio_deb = partitions[i-1].part_start+partitions[i-1].part_s;
             if(partitions[i].part_start!=inicio_deb+1){
                 //graficar un apartado del disco llamado ESPACIO LIBRE entre inicio deb y  partitions[i].start
@@ -297,8 +273,7 @@ void Reporte::Disk(Mount::_MD mounted, string pathf)
                 archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>";
                 archivo << "<tr><td align=\"left\">  del Disco </td></tr>";
                 archivo << "</td>";
-            }
-            if (partitions[i].part_type != 'p'){
+            }if (partitions[i].part_type != 'p'){
                 // GRAFICAR LOGICAS
                 archivo << "<td>";
                 archivo << "label=<<table border=" + to_string(1) + " cellborder=" + to_string(0) + " cellspacing=" + '1' + ">";
@@ -358,7 +333,6 @@ void Reporte::Disk(Mount::_MD mounted, string pathf)
             
 
         }
-
     }
     archivo << "</TR>\n";
     archivo << "</TABLE>>];\n";
