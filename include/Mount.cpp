@@ -234,7 +234,6 @@ Structs::MBR Mount::getDisk(string id, string *p) {
         throw runtime_error("identificador de disco inválido");
     }
   
-    listmount();
     for (int j = 0; j < 26; j++) {
         if (mounted[i].mpartitions[j].status == '1') {
             if (mounted[i].mpartitions[j].letter == letter) {
@@ -254,6 +253,32 @@ Structs::MBR Mount::getDisk(string id, string *p) {
     shared.handler("REP","Particion no existe");
     Structs::MBR disco;
     return disco;
+}
+//-------------------------------RETORNA PATH 
+string Mount::getPath(string id) {
+    string path;
+    if (!(id[0] == '3' && id[1] == '4')) {
+        throw runtime_error("el primer identificador no es válido");
+    }
+    string past = id;
+    char letter = id[id.length() - 1];
+    id.erase(0, 2);
+    id.pop_back();
+    int i = stoi(id) - 1;
+
+    if (i < 0) {
+        throw runtime_error("identificador de disco inválido");
+    }
+  
+    for (int j = 0; j < 26; j++) {
+        if (mounted[i].mpartitions[j].status == '1') {
+            if (mounted[i].mpartitions[j].letter == letter) {
+                path = mounted[i].path;
+                break;
+            }
+        }
+    }
+    return path;
 }
 
 

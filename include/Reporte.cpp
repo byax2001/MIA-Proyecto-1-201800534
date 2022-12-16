@@ -207,6 +207,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
     string aux;
     int vacia =0;
     int init_vacia=0;
+    
     ofstream archivo;
     string name_final = pathf;
     string arch_dot = name_final.substr(0, name_final.length()-3)+"dot";
@@ -220,7 +221,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
     Structs::MBR disk = mount.getDisk(id,&pathf);
     char path[150];
 
-    strcpy(path, pathf.c_str());
+    strcpy(path, mount.getPath(id).c_str()); //PATH DEL DISCO DE DONDE SE MONTO LA PARTICION
     
     // GRAPH- INIT ------------------------------------------
     int mbr_tamano = disk.mbr_tamano;
@@ -247,12 +248,16 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
         int part_size = pAct.part_s;
         if (i == 0)
         {   
-            init_vacia = sizeof(Structs::MBR)+1;//----para ver de donde comienzan las particiones
+            
+
             //si por si acaso viene vacia la particion
             if(partitions[i].part_s==0){
                 vacia=1; //----para indicar que la particion actual esta vacia
+                init_vacia = sizeof(Structs::MBR)+1;//----para ver de donde comienzan las particiones
                 archivo << "<td rowspan='2'>Espacio Libre</td>\n";
                 continue;
+            }else{
+                init_vacia = partitions[i].part_s+partitions[i].part_start+1;
             }
 
             if (partitions[i].part_type == 'e'){
@@ -261,7 +266,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                 archivo << "<td>\n";
                 archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
 
-                float porcentaje = (partitions[i].part_s / mbr_tamano) * 100;
+                float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 archivo << "<tr><td align=\"left\"><b> EXTENDIDA </b></td></tr>\n";
                 //ROW PARA LAS LOGICAS
                 archivo << "<tr>\n";
@@ -276,7 +281,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                     archivo << "<td rowspan='2'>EBR</td>\n";
                     archivo << "<td>\n";
                     archivo << "<table border= \'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
-                    float porcentaje = (part_size / mbr_tamano) * 100;
+                    float porcentaje = (part_size / (float)mbr_tamano) * 100;
                     archivo << "<tr><td align=\"left\"><b>Logica</b></td></tr>\n";
                     archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>\n";
                     archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
@@ -292,7 +297,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                 string aux;
                 archivo << "<td>\n";
                 archivo << "<table border= \'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
-                float porcentaje = (partitions[i].part_s / mbr_tamano) * 100;
+                float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 cout<<"\n "<<partitions[i].part_s <<" SIZE"<<endl;
                 cout<<"\n "<<mbr_tamano<<" SIZET"<<endl;
                 
@@ -305,26 +310,31 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
         }else{
             //inicio_deb = la particion actual deberia de iniciar aqui
             if(partitions[i].part_s==0){//si por si acaso viene vacia la particion
-                archivo << "<td rowspan='2'>Espacio Libre</td>\n";
+                vacia =1;
+                if(i==3){
+                    DrawUltimoLibre(partitions[i],vacia,mbr_tamano,init_vacia,&archivo);
+                }
                 continue;
+            }else if (partitions[i].part_s != 0 && vacia == 1){
+                float porcentaje = ((partitions[i].part_start - init_vacia)/(float)mbr_tamano) * 100;
+                DrawEspLibre(&archivo, porcentaje);
+                vacia = 0;
+                init_vacia = partitions[i].part_start + partitions[i].part_s + 1;
+            }else if (vacia == 0 && partitions[i].part_s != 0 ){
+                int inicio_deb = partitions[i - 1].part_start + partitions[i - 1].part_s;
+                if (partitions[i].part_start != inicio_deb + 1 || partitions[i].part_s == '0'){
+                    // graficar un apartado del disco llamado ESPACIO LIBRE entre inicio deb y  partitions[i].start
+                    float porcentaje = (partitions[i].part_start - inicio_deb) / (float)mbr_tamano * 100;
+                    DrawEspLibre(&archivo, porcentaje);
+                }
             }
-            int inicio_deb = partitions[i-1].part_start+partitions[i-1].part_s;
-            if(partitions[i].part_start!=inicio_deb+1 || partitions[i].part_s=='0'){
-                //graficar un apartado del disco llamado ESPACIO LIBRE entre inicio deb y  partitions[i].start
-                archivo << "<td>\n";
-                archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
-                float porcentaje = (partitions[i].part_start-inicio_deb) * 100;
-                archivo << "<tr><td align=\"left\"><b>Libre</b></td></tr>\n";
-                archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>\n";
-                archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
-                archivo << "</table>\n";
-                archivo << "</td>\n";
-            }if (partitions[i].part_type == 'e'){
+
+            if (partitions[i].part_type == 'e'){
                 // GRAFICAR LOGICAS
                 archivo << "<td>\n";
                 archivo << "table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
 
-                float porcentaje = (partitions[i].part_s / mbr_tamano) * 100;
+                float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 archivo << "<tr><td align=\"left\"><b> EXTENDIDA </b></td></tr>\n";
                 //ROW PARA LAS LOGICAS
                 archivo << "<tr>";
@@ -341,7 +351,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                     archivo << "td rowspan='2'>EBR</td>\n";
                     archivo << "<td>\n";
                     archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
-                    float porcentaje = (part_size / mbr_tamano) * 100;
+                    float porcentaje = (part_size / (float)mbr_tamano) * 100;
                     archivo << "<tr><td align=\"left\"><b>Logica</b></td></tr>\n";
                     archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>\n";
                     archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
@@ -353,30 +363,16 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
             }else{
                 string aux;
                 archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
-                float porcentaje = (partitions[i].part_s / mbr_tamano) * 100;
+                float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 archivo << "<tr><td align=\"left\"><b>Principal</b></td></tr>\n";
                 archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "  % </b></td></tr>\n";
                 archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
                 archivo << "</table>\n";
             }
-
             //POR SI ACASO NO SE LLENO EL DISCO HABRA UN ESPACIO ENTRE LA ULTIMA PARTICION Y EL RESTO DEL DISCO
             if (i == 3)
             {   //ultima parte del disco usada
-                int u_pdisk_usado = partitions[i].part_start+partitions[i].part_s;
-                if (u_pdisk_usado!=mbr_tamano)
-                {
-                    //APARTADO PARA CREAR UN ESPACIO LIBRE 
-                    archivo << "<td>\n";
-                    archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'>\n";
-                    float porcentaje = (mbr_tamano-u_pdisk_usado) * 100;
-                    archivo << "<tr><td align=\"left\"><b>Libre</b></td></tr>\n";
-                    archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>\n";
-                    archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
-                    archivo << "</table>\n";
-                    archivo << "</td>\n";
-                }
-                
+                DrawUltimoLibre(partitions[i],vacia,mbr_tamano,init_vacia,&archivo);
             }
             
 
@@ -402,6 +398,31 @@ string Reporte::rString(char _char){
     return aux;
 }
 
+void Reporte::DrawEspLibre(ofstream *archivo, int porcentaje){
+    *archivo << "<td>\n";
+    *archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
+    *archivo << "<tr><td align=\"left\"><b>Libre</b></td></tr>\n";
+    *archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>\n";
+    *archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
+    *archivo << "</table>\n";
+    *archivo << "</td>\n";
+}
+void Reporte::DrawUltimoLibre(Structs::Partition partition, int vacia, int mbr_tamano,int init_vacia, ofstream *archivo)
+{
+    if (vacia == 0){
+        int u_pdisk_usado = partition.part_start + partition.part_s;
+        if (u_pdisk_usado != mbr_tamano)
+        {
+            // APARTADO PARA CREAR UN ESPACIO LIBRE
+            float porcentaje = (mbr_tamano - u_pdisk_usado) / (float) mbr_tamano * 100;
+            DrawEspLibre(archivo, porcentaje);
+        }
+    }else{
+        float porcentaje = ((mbr_tamano - init_vacia) /(float)mbr_tamano )*100;
+
+        DrawEspLibre(archivo, porcentaje);
+    }
+}
 /*
 
 void Reporte::MBR_EBR(Mount::_MD mounted,string pathf){

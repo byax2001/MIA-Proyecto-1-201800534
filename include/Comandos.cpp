@@ -551,6 +551,7 @@ vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p)
     fseek(file, partition.part_start, SEEK_SET);
     fread(&tmp, sizeof(Structs::EBR), 1, file);
     //recorrer el archivo hasta hallar datos ilogicos, ahi no habra nada y sera el fin de las particiones
+    int n=0;
     do {
         if (!(tmp.part_status == '0' && tmp.part_next == -1)) {
             if (tmp.part_status != '0') {

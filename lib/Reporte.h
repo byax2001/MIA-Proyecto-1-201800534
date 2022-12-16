@@ -19,7 +19,8 @@ class Reporte{
         void crearDirectorio(string path);
         Structs::MBR getDisk(string id, string *p);
         string rString(char caracter);
-        int NextPartOcupated(int adjust);
+        void DrawEspLibre(ofstream *archivo,int porcentaje);
+        void DrawUltimoLibre(Structs::Partition partitions, int vacia, int mbr_tamano,int init_vacia, ofstream *archivo);
     private:
         Shared shared;
         Structs _struct;

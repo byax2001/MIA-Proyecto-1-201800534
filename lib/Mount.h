@@ -41,7 +41,7 @@ class Mount {
 
     Structs::Partition getmount(string id, string *p);
     Structs::MBR getDisk(string id, string *p);
-
+    string getPath(string id);
     private:
         Comandos dsk;
         Shared shared;
