@@ -37,6 +37,8 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     crearDirectorio(arch_dot);
     ofstream archivo;
     archivo.open(arch_dot, ios::out);
+   
+
     if (archivo.fail())
     {
         shared.handler("REP", "No se pudo crear el reporte de particiones");
@@ -55,7 +57,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     strftime(mbr_fecha_creacion, 20, "%Y/%m/%d %H:%M:%S", tm);
     // signature
     int mbr_signature = disk.mbr_dsk_signature;
-    cout<<arch_dot<<" FILE REP 2AAAAA333A"<<endl;
+
     archivo << "digraph RepMEBR{\n";
     archivo << "node [shape=plaintext, fontname=Arial]\n";
     archivo << "tabla [label=<<TABLE BORDER=\"1\" CELLBORDER=\"1\" CELLSPACING=\"1\">\n";
@@ -102,17 +104,17 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
         archivo << "<TR>\n";
 
         archivo << "<TD PORT=\"c\" >part_status</TD>\n";
-        archivo << "<TD PORT=\"c\" >" + to_string((char)part_status) + "</TD>\n";
+        archivo << "<TD PORT=\"c\" >" + rString(part_status) + "</TD>\n";
         archivo << "</TR>\n";
 
         archivo << "<TR>\n";
         archivo << "<TD PORT=\"c\" >part_type</TD>\n";
-        archivo << "<TD PORT=\"c\" >" + to_string((char)part_type) + "</TD>\n";
+        archivo << "<TD PORT=\"c\" >" + rString(part_type) + "</TD>\n";
         archivo << "</TR>\n";
 
         archivo << "<TR>\n";
         archivo << "<TD PORT=\"c\" >part_fit</TD>\n";
-        archivo << "<TD PORT=\"c\" >" + to_string((char)part_fit) + "</TD>\n";
+        archivo << "<TD PORT=\"c\" >" + rString(part_fit) + "</TD>\n";
         archivo << "</TR>\n";
 
         archivo << "<TR>\n";
@@ -155,7 +157,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
                 archivo << "<TR>\n";
 
                 archivo << "<TD PORT=\"c\" >part_status</TD>\n";
-                archivo << "<TD PORT=\"c\" >" + to_string((char)part_status) + "</TD>\n";
+                archivo << "<TD PORT=\"c\" >" + rString(part_status) + "</TD>\n";
                 archivo << "</TR>\n";
 
                 archivo << "<TR>\n";
@@ -165,7 +167,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
 
                 archivo << "<TR>\n";
                 archivo << "<TD PORT=\"c\" >part_fit</TD>\n";
-                archivo << "<TD PORT=\"c\" >" + to_string((char)part_fit) + "</TD>\n";
+                archivo << "<TD PORT=\"c\" >" + rString(part_fit) + "</TD>\n";
                 archivo << "</TR>\n";
 
                 archivo << "<TR>\n";
@@ -191,9 +193,7 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
     archivo << "}";
     archivo.close();
     string comandof = "dot -Tpng " + arch_dot + " -o " + name_final;
-    cout<<"ARCH DOT "<<arch_dot;
-    cout<<"NAME FINAL: "<<name_final;
-    cout<<"COMANDO consola "<<comandof;
+    cout<<"\nArchivo generado: "<<name_final<<endl;
     shared.response("REP","Creacion de reporte correcto");
     system(comandof.c_str());
 }
@@ -205,6 +205,8 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
 {
     // CON EL PATH DEL DISCO MONTADO SE SELECCIONA EL DISCO Y SE OBTIENEN TODOS LOS DATOS PARA EL GRAFICO
     string aux;
+    int vacia =0;
+    int init_vacia=0;
     ofstream archivo;
     string name_final = pathf;
     string arch_dot = name_final.substr(0, name_final.length()-3)+"dot";
@@ -245,8 +247,10 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
         int part_size = pAct.part_s;
         if (i == 0)
         {   
+            init_vacia = sizeof(Structs::MBR)+1;//----para ver de donde comienzan las particiones
             //si por si acaso viene vacia la particion
             if(partitions[i].part_s==0){
+                vacia=1; //----para indicar que la particion actual esta vacia
                 archivo << "<td rowspan='2'>Espacio Libre</td>\n";
                 continue;
             }
@@ -263,7 +267,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                 archivo << "<tr>\n";
                 vector<Structs::EBR> Logicas;
                 Logicas = comandos.getlogics(pAct, path);
-                for (size_t i = 0; i < sizeof(Logicas); i++)
+                for (size_t i = 0; i < Logicas.size(); i++)
                 {
                     Structs::EBR LogAct = Logicas[i];
                     int part_next = LogAct.part_next;
@@ -383,14 +387,20 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
     archivo << "}";
     archivo.close();
     string comandof = "dot -Tpng \"" + arch_dot + "\" -o \"" + name_final + "\"";
-    cout<<"ARCH DOT "<<arch_dot;
-    cout<<"NAME FINAL: "<<name_final;
-    cout<<"COMANDO consola "<<comandof;
+    
     shared.response("REP","Creacion de reporte correcto");
+    cout<<"\nArchivo: "<<name_final<<endl;
     system(comandof.c_str());
 }
 
-
+string Reporte::rString(char _char){
+    string aux;
+    if(_char==0){
+        _char='*';
+    }
+    aux.push_back(_char);
+    return aux;
+}
 
 /*
 
