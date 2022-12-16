@@ -18,6 +18,7 @@ class Reporte{
         void DiskRep(string id,string pathf, Mount mount);
         void crearDirectorio(string path);
         Structs::MBR getDisk(string id, string *p);
+        int NextPartOcupated(int adjust);
     private:
         Shared shared;
         Structs _struct;
