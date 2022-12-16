@@ -65,26 +65,44 @@ void Mount::mount(string p, string n) {
         fclose(validate);
 
         Structs::Partition partition = dsk.findby(disk, n, p);
-        if (partition.part_type == 'E') {
+        vector<string> nameEbrs;
+        if (partition.part_type == 'e') {
             vector<Structs::EBR> ebrs = dsk.getlogics(partition, p);
             if (!ebrs.empty()) {
-                Structs::EBR ebr = ebrs.at(0);
-                n = ebr.part_name;
+                for(Structs::EBR ebr:ebrs){
+                    nameEbrs.push_back(ebr.part_name);
+                }
                 //shared.handler("", "se montará una partición lógica");
             } else {
                 throw runtime_error("no se puede montar una extendida");
             }
+
+            for(string namesLogic:nameEbrs){
+                IngresarMount(p,n);
+            }
+
+        }else{
+            IngresarMount(p,n);
         }
-        //recorrer los 99 discos montados
-        for (int i = 0; i < 99; i++) {
-            if (mounted[i].path == p) {
-                //recorrer las 26 particiones de cada disco
-                for (int j = 0; j < 26; j++) {
-                    if (Mount::mounted[i].mpartitions[j].status == '0') {
+
+    }
+    catch (exception &e) {
+        shared.handler("MOUNT", e.what());
+        return;
+    }
+}
+void Mount::IngresarMount(string p, string n){
+    try{
+        // recorrer los 99 discos montados
+        for (int i = 0; i < 99; i++){
+            if (mounted[i].path == p){
+                // recorrer las 26 particiones de cada disco
+                for (int j = 0; j < 26; j++){
+                    if (Mount::mounted[i].mpartitions[j].status == '0'){
                         mounted[i].mpartitions[j].status = '1';
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
-                        //numero de disco montado+1 + letra 
+                        // numero de disco montado+1 + letra
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         return;
@@ -92,18 +110,22 @@ void Mount::mount(string p, string n) {
                 }
             }
         }
-        //recorrer los 99 discos montados
-        for (int i = 0; i < 99; i++) {
-            if (mounted[i].status == '0') {
+        // recorrer los 99 discos montados
+        for (int i = 0; i < 99; i++)
+        {
+            if (mounted[i].status == '0')
+            {
                 mounted[i].status = '1';
                 strcpy(mounted[i].path, p.c_str());
-                //recorrer las 26 particiones
-                for (int j = 0; j < 26; j++) {
-                    if (Mount::mounted[i].mpartitions[j].status == '0') {
+                // recorrer las 26 particiones
+                for (int j = 0; j < 26; j++)
+                {
+                    if (Mount::mounted[i].mpartitions[j].status == '0')
+                    {
                         mounted[i].mpartitions[j].status = '1';
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
-                        //numero de disco montado+1 + letra 
+                        // numero de disco montado+1 + letra
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         return;
@@ -112,7 +134,8 @@ void Mount::mount(string p, string n) {
             }
         }
     }
-    catch (exception &e) {
+    catch (exception &e)
+    {
         shared.handler("MOUNT", e.what());
         return;
     }

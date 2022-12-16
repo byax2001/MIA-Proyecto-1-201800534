@@ -34,9 +34,10 @@ class Mount {
     void unmount(vector<string> context);
 
     void mount(string p, string n);
+    void IngresarMount (string p, string n);
 
     void unmount(string id);
-
+    
     void listmount();
 
     Structs::Partition getmount(string id, string *p);

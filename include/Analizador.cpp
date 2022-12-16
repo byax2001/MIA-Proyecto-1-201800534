@@ -134,7 +134,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
 
     //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk -u=K -name=Particion2 -s=300
     //fdisk -s=1 -t=L -u=M -f=BF -path="/home/brandon/hola2/disco3.dsk"-name="Particion3"
-    //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-name=Part3 -u=K -s=200
+    //fdisk -t=E -path=/home/brandon/hola2/disco3.dsk-name=Part3 -u=K -s=200mount -path=/home/brandon/hola2/disco3.dsk -name=Particion1
     //fdisk -delete=fast -name="Particion1" -path=/home/brandon/hola2/disco3.dsk
     //fdisk -name=Particion1 -delete=full -path=/home/brandon/hola2/disco3.dsk
     //fdisk -add=-500 -s=10 -u=K -path=/home/brandon/hola2/disco3.dsk -name=Particion4
