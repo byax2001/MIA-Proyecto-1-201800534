@@ -11,16 +11,21 @@ void Comandos::ejecutarInst(Parametros p)
     
 {
     if (p.Comando == "mkdisk")
-    { // Se identifica el comando
+    { // Se identifica el coman do
+        if(!(p.dimensional=='b' || p.dimensional=='k'|| p.dimensional=='m')){
+            shared.handler("MKDISK","-u no contiene los valores esperados...");
+            return;
+        };
+        if(!(p.ajuste_particion=='f' || p.ajuste_particion=='w'|| p.ajuste_particion=='b')){
+            shared.handler("MKDISK","Tipo de ajuste de particion erroneos..");
+            return;
+        };
         
         CreateDisk(p.tamano, p.ajuste_particion, p.dimensional, p.path);
     }
     else if (p.Comando == "fdisk")
     {   
 
-        string a = "XDXXDDDD";
-        a=to_string(p.dimensional);
-        printf(a.c_str());
         
         if(p.dimensional!='k' && p.dimensional!='m' && p.dimensional !='b'){
             shared.handler("FDISK","Error la dimensional no tiene parametros correctos ");
@@ -111,6 +116,12 @@ void Comandos::CreateDisk(int tamano, char t_particion, char dim, string path)
     disco.mbr_partition_2 = Structs::Partition();
     disco.mbr_partition_3 = Structs::Partition();
     disco.mbr_partition_4 = Structs::Partition();
+    //STATUS
+    disco.mbr_partition_1.part_status='0';
+    disco.mbr_partition_2.part_status='0';
+    disco.mbr_partition_3.part_status='0';
+    disco.mbr_partition_4.part_status='0';
+    
 
     //ubicarse al inicio del disco rellenado con \0 y luego escribir el mbr
     fseek(archivo_bin, 0, SEEK_SET);
@@ -208,6 +219,17 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         
         //get partitions retorna un vector de structs Particion ya existentes
         vector<Structs::Partition> partitions = getPartitions(disco); 
+
+        //VERIFICIAR QUE NO HALLA MAS DE DOS EXTENDIDAS
+        for(Structs::Partition part : partitions){
+            cout<<"part_type "<<part.part_type<<" type: "<< t<<endl;
+            shared.Pause_press_to_continue();
+            if(part.part_type=='e' && t=='e'){
+                shared.handler("FDISK","Error no puede haber mas de dos particiones extendidas");
+                return;
+            }
+        }
+
         vector<Transition> between;//vector entre transiciones
 
         int used = 0; //usado
@@ -241,7 +263,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
                 between.push_back(trn); //INGRESAR AL VECTOR
                 used++;
                 //para saber si existe particion extendida
-                if(prttn.part_type == 'e' || prttn.part_type == 'E'){
+                if(prttn.part_type == 'e'){
                     ext++;
                     extended = prttn;
                 }
@@ -249,6 +271,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
             //SOLO SE PUEDEN CREAR LOGICAS LUEGO DE 4 PARTICIONES
             if(used == 4 && !t=='l'){
                 throw runtime_error("Limite de particiones alcanzado");
+                return;
             }else if(ext==1 && t=='e'){
                 throw runtime_error("Solo se puede crear una particion Extendida");
             }
@@ -279,6 +302,7 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         newPartition.part_status = '1';
         newPartition.part_s = s;
         newPartition.part_type = t; //P,E,L
+        cout<<endl<<"---------TIPO DE PARTICION: "<<newPartition.part_type<<endl;
         newPartition.part_fit = f; //B,F,W
         strcpy(newPartition.part_name, n.c_str());
         
@@ -290,6 +314,12 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         }
         //METER NUEVA PARTICION AL MBR  
         disco = adjust(disco, newPartition, between, partitions, used); 
+        cout<<"disco:--------------------------"<<endl;
+        vector<Structs::Partition> partitions2 = getPartitions(disco); 
+        for(Structs::Partition part: partitions2){
+            cout<<"###### Partition :" <<part.part_type<<" name: "<<part.part_name<< " status: "<<part.part_status<<endl;;
+        }
+
 
         FILE *bfile = fopen(p.c_str(), "rb+");
         if (bfile != NULL) {
@@ -343,12 +373,12 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                 continue;
             }
 
-            if (toupper(mbr.dsk_fit) == 'F') {
+            if (mbr.dsk_fit == 'f') {
                 if (toUse.before >= p.part_s || toUse.after >= p.part_s) {
                     break;
                 }
                 toUse = tr;
-            } else if (toupper(mbr.dsk_fit) == 'B') {
+            } else if (mbr.dsk_fit == 'b') {
                 if (toUse.before < p.part_s || toUse.after < p.part_s) {
                     toUse = tr;
                 } else {
@@ -365,7 +395,7 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                         toUse = tr;
                     }
                 }
-            } else if (toupper(mbr.dsk_fit) == 'W') {
+            } else if (mbr.dsk_fit == 'w') {
                 if (!(toUse.before >= p.part_s) || !(toUse.after >= p.part_s)) {
                     toUse = tr;
                 } else {
@@ -386,7 +416,7 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
             c++;
         }
         if (toUse.before >= p.part_s || toUse.after >= p.part_s) {
-            if (toupper(mbr.dsk_fit) == 'F') {
+            if (mbr.dsk_fit == 'f') {
                 if (toUse.before >= p.part_s) {
                     p.part_start = (toUse.start - toUse.before);
                     startValue = p.part_start;
@@ -394,7 +424,7 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                     p.part_start = toUse.end;
                     startValue = p.part_start;
                 }
-            } else if (toupper(mbr.dsk_fit) == 'B') {
+            } else if (mbr.dsk_fit== 'b') {
                 int b1 = toUse.before - p.part_s;
                 int a1 = toUse.after - p.part_s;
 
@@ -405,7 +435,7 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                     p.part_start = toUse.end;
                     startValue = p.part_start;
                 }
-            } else if (toupper(mbr.dsk_fit) == 'W') {
+            } else if (mbr.dsk_fit == 'w') {
                 int b1 = toUse.before - p.part_s;
                 int a1 = toUse.after - p.part_s;
 
@@ -421,14 +451,22 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
             
             //ps: partitions mandados desde la llamada
             for (int i = 0; i < ps.size(); i++) {
+                  
                 partitions[i] = ps.at(i);
             }
+            cout<<endl<<"STATUS PARTICION-----------"<<endl;
             for (auto &partition : partitions) {
+                 cout<<"STATUS-----------"<<partition.part_status<<endl;;
                 if (partition.part_status == '0') {
                     //disco libre mas cercano del array partitions que no es igual a ps 
                     partition = p;
                     break;
                 }
+            }
+            cout<<endl<<"PARTICIONES ADJUST------------"<<endl;
+            for (auto partition : partitions) {
+                
+                cout<<endl<<"name: "<<partition.part_name<<" tipo t: "<<partition.part_type<< " fit: "<<partition.part_fit<<endl;
             }
 
             Structs::Partition aux;
@@ -508,6 +546,7 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
     nlogic.part_fit = partition.part_fit;
     nlogic.part_s = partition.part_s;
     nlogic.part_next = -1;
+
     strcpy(nlogic.part_name, partition.part_name);
 
     FILE *file = fopen(p.c_str(), "rb+");
@@ -536,6 +575,11 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
             shared.response("FDISK", "partición creada correctamente");
             fclose(file);
             return;
+        }else{
+            if (strcmp(tmp.part_name,partition.part_name)==0){
+                shared.handler("FDISK","Ya existe una particion con dicho nombre");
+                return; 
+            }
         }
         fseek(file, tmp.part_next, SEEK_SET);
         fread(&tmp, sizeof(Structs::EBR), 1, file);

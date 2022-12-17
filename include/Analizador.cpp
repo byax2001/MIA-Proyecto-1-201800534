@@ -51,15 +51,16 @@ vector<string> Analizador::split_txt(string text){ // Split para separar tipo de
 
     while(std::getline(ss, segment, ' ')){
         if (aux1==0){
-            if (segment.find("\"")==0){
-                aux=1;
+            if (segment.find("\"")!=string::npos){
+                aux1=1;
                 aux=segment;
             }else{
                 splited.push_back(segment);
             }
             
         }else{
-            if (segment.find("\"")==0){
+            if (segment.find("\"")!=string::npos){
+                aux=aux+" "+segment;
                 splited.push_back(aux);
                 aux1=0;
             }else{
@@ -69,7 +70,15 @@ vector<string> Analizador::split_txt(string text){ // Split para separar tipo de
         
 
     }
-    return splited;
+    //eliminar comentarios que estan en la misma linea;
+    vector<string> splited_aux;
+    for (string segment_:splited){
+        if(segment_.find("#")!=string::npos){
+            break;
+        }
+        splited_aux.push_back(segment_);
+    }
+    return splited_aux;
 }
 
 string Analizador::replace_txt(string str, const string& from, const string& to) {
@@ -119,8 +128,9 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
     Comandos cmd;
     string param = "";
 
+    //exec -path=/home/brandon/arch.mia
 
-     //mkdisk -s=4000 -u=K -path=/home/brandon/hola2/Disco3.dsk
+    //mkdisk -s=4000 -u=K -path=/home/brandon/hola2/Disco3.dsk
     //rmdisk -path=/home/brandon/hola2/disco3.dsk
     //fdisk -s=300 -path=/home/brandon/hola2/disco3.dsk -name=Particion1
     //mount -path=/home/brandon/hola2/disco3.dsk -name=Particion1
@@ -163,6 +173,11 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
                 param=replace_txt(param,"-path=","");
                 param=replace_txt(param,"\"","");
                 cmd.param.path=param;
+            }else{
+                cout<<"\nPARAMETROS "<<param<<endl;
+
+                shared.handler("MKDISK","Parametros extras no compatibles con la instruccion");
+                return;
             }
         }
         // Ejecucion de metodo
@@ -282,7 +297,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
     }else if(comando.compare("exit")==0){
         cout<<"Exit"<<endl;
     }else{
-        cout<<"Comando no reconocido"<<endl;
+        shared.handler("ERROR","Comando no reconocido");
     }
 }
 

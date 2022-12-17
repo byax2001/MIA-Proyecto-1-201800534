@@ -17,6 +17,8 @@
 #include <iostream>
 using namespace std; 
 
+
+//exec -path=/home/brandon/arch.mia
 class Analizador
 {
 public:
