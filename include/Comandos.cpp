@@ -466,7 +466,8 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
             cout<<endl<<"PARTICIONES ADJUST------------"<<endl;
             for (auto partition : partitions) {
                 
-                cout<<endl<<"name: "<<partition.part_name<<" tipo t: "<<partition.part_type<< " fit: "<<partition.part_fit<<endl;
+                cout<<endl<<"name: "<<partition.part_name<<" tipo: "<<partition.part_type
+                << " fit: "<<partition.part_fit<<" tam: "<<partition.part_s<<endl;
             }
 
             Structs::Partition aux;
@@ -553,13 +554,23 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
     rewind(file);
     Structs::EBR tmp;
     fseek(file, ep.part_start, SEEK_SET);
-    fread(&tmp, sizeof(Structs::EBR), 1, file);
-    int size;
+    fread(&tmp, sizeof(Structs::ebr), 1, file);
+    int size=0;
     do {
-        size += sizeof(Structs::EBR) + tmp.part_s;
+        cout<<"size "<<size<<"struc ebr:"<<sizeof(Structs::ebr) <<"ebract size:" <<tmp.part_s<<"AAAAAAAAAAAAAAAAA LGOICICICICIC"<<endl;
+        int size_aux=sizeof(Structs::ebr) + tmp.part_s;
+        size =size+size_aux;
+        cout<<"size"<<size<<"AAAAAAAAAAAAAAAAA LGOICICICICIC"<<endl;
         if (tmp.part_status == '0' && tmp.part_next == -1) {
             nlogic.part_start = tmp.part_start;
-            nlogic.part_next = nlogic.part_start + nlogic.part_s + sizeof(Structs::EBR);
+            nlogic.part_next = nlogic.part_start + nlogic.part_s + sizeof(Structs::ebr);
+            //ep = particion extendida
+
+            //size = tamaño STRUCT EBR + particion ebr actual.size 
+            //tamno particion extendida mandada - size  <= tam nueva particion
+            cout<<endl<<"EP SIZE: "<<ep.part_s<<" tmp tam:"<<tmp.part_s
+            <<" SIZE: "<<size<< " NLOGIC TAM "<<nlogic.part_s<<
+            "struct ebr: "<<sizeof(Structs::ebr)<<endl;
             if ((ep.part_s - size) <= nlogic.part_s) {
                 throw runtime_error("no hay espacio para más particiones lógicas");
             }

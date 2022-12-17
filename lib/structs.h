@@ -16,11 +16,11 @@ struct Transition{
 };
 struct Partition
 {
-    char part_status;
+    char part_status='0';
     char part_type;
     char part_fit;
-    int part_start;
-    int part_s;
+    int part_start=-1;
+    int part_s=0;
     char part_name[16];
 } partition_,vacioP;
 
@@ -38,13 +38,13 @@ struct MBR
 
 struct EBR
 {
-    char part_status;
+    char part_status='0';
     char part_fit;
     int part_start;
-    int part_s;
-    int part_next;
+    int part_s=0;
+    int part_next=-1;
     char part_name[16];
-};
+} ebr;
 
 };
 
