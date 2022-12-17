@@ -24,9 +24,7 @@ void Comandos::ejecutarInst(Parametros p)
         CreateDisk(p.tamano, p.ajuste_particion, p.dimensional, p.path);
     }
     else if (p.Comando == "fdisk")
-    {   
-
-        
+    {    
         if(p.dimensional!='k' && p.dimensional!='m' && p.dimensional !='b'){
             shared.handler("FDISK","Error la dimensional no tiene parametros correctos ");
             return;
@@ -188,8 +186,9 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         }
         //evaluar que las dimensionales sean correctas
         if(u=='b' || u=='k'|| u=='m'){
-            if(!u=='b'){
-                s *= (u=='k') ? 1024: 1024*1024;
+            if(!(u=='b')){
+                int aux= (u=='k') ? 1024: 1024*1024;
+                s = s*aux;
             }
         }else{
             throw runtime_error("-u no contiene los valores esperados...");
@@ -222,7 +221,6 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
 
         //VERIFICIAR QUE NO HALLA MAS DE DOS EXTENDIDAS
         for(Structs::Partition part : partitions){
-            cout<<"part_type "<<part.part_type<<" type: "<< t<<endl;
             shared.Pause_press_to_continue();
             if(part.part_type=='e' && t=='e'){
                 shared.handler("FDISK","Error no puede haber mas de dos particiones extendidas");
@@ -302,7 +300,6 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         newPartition.part_status = '1';
         newPartition.part_s = s;
         newPartition.part_type = t; //P,E,L
-        cout<<endl<<"---------TIPO DE PARTICION: "<<newPartition.part_type<<endl;
         newPartition.part_fit = f; //B,F,W
         strcpy(newPartition.part_name, n.c_str());
         
@@ -454,9 +451,7 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                   
                 partitions[i] = ps.at(i);
             }
-            cout<<endl<<"STATUS PARTICION-----------"<<endl;
             for (auto &partition : partitions) {
-                 cout<<"STATUS-----------"<<partition.part_status<<endl;;
                 if (partition.part_status == '0') {
                     //disco libre mas cercano del array partitions que no es igual a ps 
                     partition = p;
@@ -557,10 +552,8 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
     fread(&tmp, sizeof(Structs::ebr), 1, file);
     int size=0;
     do {
-        cout<<"size "<<size<<"struc ebr:"<<sizeof(Structs::ebr) <<"ebract size:" <<tmp.part_s<<"AAAAAAAAAAAAAAAAA LGOICICICICIC"<<endl;
         int size_aux=sizeof(Structs::ebr) + tmp.part_s;
         size =size+size_aux;
-        cout<<"size"<<size<<"AAAAAAAAAAAAAAAAA LGOICICICICIC"<<endl;
         if (tmp.part_status == '0' && tmp.part_next == -1) {
             nlogic.part_start = tmp.part_start;
             nlogic.part_next = nlogic.part_start + nlogic.part_s + sizeof(Structs::ebr);
@@ -568,9 +561,6 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
 
             //size = tamaño STRUCT EBR + particion ebr actual.size 
             //tamno particion extendida mandada - size  <= tam nueva particion
-            cout<<endl<<"EP SIZE: "<<ep.part_s<<" tmp tam:"<<tmp.part_s
-            <<" SIZE: "<<size<< " NLOGIC TAM "<<nlogic.part_s<<
-            "struct ebr: "<<sizeof(Structs::ebr)<<endl;
             if ((ep.part_s - size) <= nlogic.part_s) {
                 throw runtime_error("no hay espacio para más particiones lógicas");
             }

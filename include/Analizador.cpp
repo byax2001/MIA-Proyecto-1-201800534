@@ -197,7 +197,9 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
             }else if(param.find("-u=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
                 param = replace_txt(param, "-u=", "");
                 param = replace_txt(param, "\"", "");
-                cmd.param.u= param;
+                cmd.param.dimensional= param[0];
+                cout<<"\nUUUUU: ---------------------------"<<cmd.param.dimensional<<endl;
+        
             }else if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
                 param = replace_txt(param, "-path=", "");
                 param = replace_txt(param, "\"", "");
@@ -225,6 +227,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
                 cmd.param.opcionFdisk = 'a';
             }
         }
+        cout<<"\nUUUUU: ---------------------------"<<cmd.param.dimensional<<endl;
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
     } else if(comando.compare("mount")==0){
