@@ -264,6 +264,21 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
     partitions.push_back(disk.mbr_partition_3);
     partitions.push_back(disk.mbr_partition_4);
 
+    //ORDENAR PARTICIONES
+    for (int z = 0; z < 3; z++)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            if (partitions[i].part_start > partitions[i + 1].part_start)
+            {
+                Structs::Partition aux;
+                aux = partitions[i];
+                partitions[i] = partitions[i + 1];
+                partitions[i + 1] = aux;
+            }
+        }
+    }
+
     int inicio_aux = 0;
 
     for (size_t i = 0; i < 4; i++)
@@ -352,7 +367,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                 int inicio_deb = partitions[i - 1].part_start + partitions[i - 1].part_s;
                 if (partitions[i].part_start != inicio_deb + 1 || partitions[i].part_s == '0'){
                     // graficar un apartado del disco llamado ESPACIO LIBRE entre inicio deb y  partitions[i].start
-                    float porcentaje = (partitions[i].part_start - inicio_deb) / (float)mbr_tamano * 100;
+                    float porcentaje = ((partitions[i].part_start - inicio_deb) / (float)mbr_tamano )* 100;
                     DrawEspLibre(&archivo, porcentaje);
                 }
             }

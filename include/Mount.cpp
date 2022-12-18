@@ -27,7 +27,6 @@ void Mount::mount(vector<string> context) {
             id=id.substr(1, current.length() - 1);
         }
         printf(id.c_str());
-        cout<<"  f";
 
         if (shared.compare(id, "name")) {
             if (count(required.begin(), required.end(), id)) {
@@ -190,7 +189,6 @@ void Mount::unmount(string id) {
                     MountedPartition mp = MountedPartition();
                     mounted[i].mpartitions[j] = mp;
                     shared.response("UNMOUNT", "se ha realizado correctamente el unmount -id=" + past);
-                    shared.Pause_press_to_continue();
                     return;
                 }
             }

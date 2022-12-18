@@ -152,11 +152,18 @@ void Comandos::DeleteFile(string path)
     strcpy(char_path, path.c_str());
     if (remove(char_path) != 0)
     {
-        shared.handler("RMDISK","Error al eliminar el archivo ");
+        shared.handler("RMDISK","Error al eliminar el archivo,  Disco no existe");
     }
     else
     {
-        shared.response("RMDISK","Se elimino el archivo correctamente ");
+        string pexit;
+        cout<<"\n Desea eliminar el disco? ( cualquier tecla / n)";
+        getline(cin,pexit);
+        if(pexit=="n"){
+            shared.response("RMDISK","Se cancela la eliminacion del disco");
+            return;
+        }
+        shared.response("RMDISK","Se elimino el archivo correctamente");
     }
     
 }
@@ -673,9 +680,7 @@ void Comandos::deletepartition(string d, string p, string n) {
                         shared.response("FDISK", "partición eliminada correctamente -" + d);
                         break;
                     }
-                    cout<<endl<<"AAAAAAAAAAAAAAa"<<endl;
                     vector<Structs::EBR> ebrs = getlogics(partitions[i], p);
-                     cout<<endl<<"AAAAAAAAAAAAAAa"<<endl;
                     int count = 0;
                     for (Structs::EBR ebr : ebrs) {
                         if (shared.compare(ebr.part_name, n)) {
@@ -786,34 +791,41 @@ void Comandos::addpartition(int add, char u, string n, string p) {
                                 }else{
                                     if (((partitions[i].part_s + (add_tam) +partitions[i].part_start) >
                                         partitions[i].part_start)) {
-                                        partitions[i].part_s -= add_tam;
+                                        partitions[i].part_s += add_tam;                                      
                                         break;
                                     } else {
                                         throw runtime_error("Elimina mas espacio del posible");
                                     }
-                                    partitions[i].part_s -= add_tam; 
                                 }
                                 
                             }
                         }
-                        //SI LA PARTICION CON EL NOMBRE BUSCADO ES EL ULTIMO DATO
-                        if (add_tam > 0) {
-                            if ((partitions[3].part_s + (add_tam) +partitions[3].part_start) <=
-                                disk.mbr_tamano) {
-                                partitions[3].part_s += add_tam;
-                                break;
-                            } else {
-                                throw runtime_error("se sobrepasa el límite");
-                            }
-                        }else{
-                            if (((partitions[i].part_s + (add_tam) +partitions[i].part_start) >
-                                partitions[i].part_start)) {
+                        else
+                        {
+                            // SI LA PARTICION CON EL NOMBRE BUSCADO ES EL ULTIMO DATO
+                            if (add_tam > 0)
+                            {
+                                if ((partitions[i].part_s + (add_tam) + partitions[i].part_start) <=
+                                    disk.mbr_tamano)
+                                {
+                                    partitions[3].part_s += add_tam;     
+                                    break;
+                                }
+                                else
+                                {
+                                    throw runtime_error("se sobrepasa el límite");
+                                }
+                            }else{
+                                if (((partitions[i].part_s + (add_tam) + partitions[i].part_start) >
+                                     partitions[i].part_start)){
+                                    partitions[i].part_s += add_tam;
+                                        
+                                    break;
+                                }else{
+                                    throw runtime_error("Elimina mas espacio del posible");
+                                }
                                 partitions[i].part_s -= add_tam;
-                                break;
-                            } else {
-                                throw runtime_error("Elimina mas espacio del posible");
                             }
-                            partitions[i].part_s -= add_tam; 
                         }
                     }
                 }
