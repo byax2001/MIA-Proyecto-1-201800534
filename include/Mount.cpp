@@ -68,19 +68,20 @@ void Mount::mount(string p, string n) {
         vector<string> nameEbrs;
         if (partition.part_type == 'e') {
             vector<Structs::EBR> ebrs = dsk.getlogics(partition, p);
+            for (Structs::EBR ebr: ebrs)
+            {
+                cout<<endl<<"Name: "<<ebr.part_name<<endl;
+            }
+            
+
             if (!ebrs.empty()) {
-                for(Structs::EBR ebr:ebrs){
-                    nameEbrs.push_back(ebr.part_name);
-                }
-                //shared.handler("", "se montará una partición lógica");
+                Structs::EBR ebr = ebrs.at(0);
+                n = ebr.part_name;
+                shared.response("MOUNT", "se montará una partición lógica");
             } else {
                 throw runtime_error("no se puede montar una extendida");
             }
-
-            for(string namesLogic:nameEbrs){
                 IngresarMount(p,n);
-            }
-
         }else{
             IngresarMount(p,n);
         }
@@ -102,7 +103,7 @@ void Mount::IngresarMount(string p, string n){
                         mounted[i].mpartitions[j].status = '1';
                         mounted[i].mpartitions[j].letter = alfabeto.at(j);
                         strcpy(mounted[i].mpartitions[j].name, n.c_str());
-                        // numero de disco montado+1 + letra
+                        // numero de disco montado + 1 + letra
                         string re = to_string(i + 1) + alfabeto.at(j);
                         shared.response("MOUNT", "se ha realizado correctamente el mount -id=34" + re);
                         return;

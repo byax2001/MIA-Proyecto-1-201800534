@@ -174,7 +174,6 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
                 param=replace_txt(param,"\"","");
                 cmd.param.path=param;
             }else{
-                cout<<"\nPARAMETROS "<<param<<endl;
 
                 shared.handler("MKDISK","Parametros extras no compatibles con la instruccion");
                 return;
@@ -198,7 +197,6 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
                 param = replace_txt(param, "-u=", "");
                 param = replace_txt(param, "\"", "");
                 cmd.param.dimensional= param[0];
-                cout<<"\nUUUUU: ---------------------------"<<cmd.param.dimensional<<endl;
         
             }else if(param.find("-path=") == 0){  //find devuelve un 0 si se encontro, si no devolvera el tamaño del string completo
                 param = replace_txt(param, "-path=", "");
@@ -222,12 +220,11 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
                 param = replace_txt(param, "\"", "");
                 cmd.param.name=param;
             }else if(param.find("-add=")==0){
-                param=replace_txt(param,"-s=","");
+                param=replace_txt(param,"-add=","");
                 cmd.param.add=stoi(param.c_str());///convertir valor a int
                 cmd.param.opcionFdisk = 'a';
             }
         }
-        cout<<"\nUUUUU: ---------------------------"<<cmd.param.dimensional<<endl;
         cmd.param.Comando = "fdisk";
         cmd.ejecutarInst(cmd.param);
     } else if(comando.compare("mount")==0){

@@ -22,7 +22,6 @@
 // Apartado para los comandos
 struct Parametros
 {
-
     string Comando = "";
     int tamano = 0;
     char ajuste_particion = 'w';
@@ -72,7 +71,7 @@ public:
     Structs::Partition findby(Structs::MBR mbr, string name, string path);
     void logic(Structs::Partition partition, Structs::Partition ep, string p);
     vector<Structs::EBR> getlogics(Structs::Partition partition, string p);
-
+    void ImprimirParticiones(vector<Structs::Partition> partitions);
 private:
     Shared shared;
  

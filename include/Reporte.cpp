@@ -19,6 +19,8 @@ void Reporte::crearDirectorio(string path){
         // cout<<"Direccion: "<<path<<" :)"<<endl;
         string comando1 = "mkdir -p \"" + path + "\"";
         string comando2 = "rmdir \"" + path + "\"";
+        cout<<endl<<"comando1: "<<comando1<<" comando2: "<<comando2<<endl;
+        shared.Pause_press_to_continue();
         system(comando1.c_str());
         system(comando2.c_str());
         FILE *file = fopen(path.c_str(), "w+b");
@@ -96,10 +98,14 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
         int part_size = pAct.part_s;
         char part_name[16];
         strcpy(part_name, pAct.part_name);
-
+        archivo << "\n/* INICIO PARTICION */\n";
         archivo << "<TR>\n";
         archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\">Particion</TD>\n";
-        archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\"> </TD>\n";
+        if(part_type == 'e'){
+            archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\"> Extendida</TD>\n";
+        }else{
+            archivo << "<TD PORT=\"c\" BGCOLOR=\"purple\"> Principal </TD>\n";
+        }
         archivo << "</TR>\n";
         archivo << "<TR>\n";
 
@@ -148,11 +154,28 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
                 int part_start = LogAct.part_start;
                 int part_size = LogAct.part_s;
                 char part_name[16];
-                strcpy(part_name, LogAct.part_name);
+                strncpy(part_name,LogAct.part_name,16);
+                cout<<"SIZE: "<<part_size<<" name "<<part_name<<" CARACTER "<<(int)part_name[0]<<endl;
+                
+                if(part_size<0 || (int)part_name[1]<32){
+                    continue;
+                }
+                bool part_warning=false;
+                for (int i = 0; i < 16; i++)
+                {
+                    cout<<"NAME CHAR: "<<part_name<<" CARACTER: "<<(int)part_name[i]<<endl;
+                
+                    if((int)part_name[i]<48 && (int)part_name[i]!=0){
+                        part_warning=true;
+                    }
+                }
+                if(part_warning==true){
+                    continue;
+                }
 
                 archivo << "<TR>\n";
-                archivo << "<TD PORT=\"c\" BGCOLOR=\"pink\"Particion Logica</TD>\n";
-                archivo << "<TD PORT=\"c\" BGCOLOR=\"pink\"> </TD>\n";
+                archivo << "<TD PORT=\"c\" BGCOLOR=\"pink\"> Particion </TD>\n";
+                archivo << "<TD PORT=\"c\" BGCOLOR=\"pink\"> Logica </TD>\n";
                 archivo << "</TR>\n";
                 archivo << "<TR>\n";
 
@@ -181,12 +204,14 @@ void Reporte::MBR_EBR(string id, string pathf, Mount mount){
                 archivo << "</TR>\n";
 
                 archivo << "<TR>\n";
-                archivo << "<TD PORT=\"c\" >part_name/TD>\n";
+                archivo << "<TD PORT=\"c\" >part_name</TD>\n";
                 string str(part_name);
                 archivo << "<TD PORT=\"c\" >" + str + "</TD>\n";
                 archivo << "</TR>\n";
             }
+        
         }
+        archivo << "\n/*FIN PARTICION */\n";
     }
 
     archivo << "</TABLE>>];\n";
@@ -211,6 +236,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
     ofstream archivo;
     string name_final = pathf;
     string arch_dot = name_final.substr(0, name_final.length()-3)+"dot";
+    crearDirectorio(arch_dot);
     archivo.open(arch_dot, ios::out);
     if (archivo.fail())
     {
@@ -263,6 +289,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
             if (partitions[i].part_type == 'e'){
                 // GRAFICAR LOGICAS
                 // EBR SON LAS LOGICAS
+                archivo<<"\n/*PARTICION EXTENDIDA*/\n";
                 archivo << "<td>\n";
                 archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
 
@@ -289,23 +316,24 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                     archivo << "</td>\n";
                 }
                 archivo << "</tr>\n";
-                archivo << "</table>";
+                archivo << "</table>\n";
                 archivo << "</td>\n";
-
+                archivo<<"\n/*FIN PARTICION EXTENDIDA*/\n";
 
             }else{
                 string aux;
+                archivo<<"\n/* PARTICION PRINCIPAL*/\n";
                 archivo << "<td>\n";
                 archivo << "<table border= \'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
                 float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 cout<<"\n "<<partitions[i].part_s <<" SIZE"<<endl;
-                cout<<"\n "<<mbr_tamano<<" SIZET"<<endl;
-                
+                cout<<"\n "<<mbr_tamano<<" SIZET"<<endl;     
                 archivo << "<tr><td align=\"left\"><b>Principal</b></td></tr>\n";
                 archivo << "<tr><td align=\"left\">" + to_string(porcentaje) + "  %</td></tr>\n";
                 archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
                 archivo << "</table>\n";
                 archivo << "</td>\n";
+                archivo<<"\n/*FIN PARTICION PRINCIPAL*/\n";
             }
         }else{
             //inicio_deb = la particion actual deberia de iniciar aqui
@@ -332,7 +360,7 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
             if (partitions[i].part_type == 'e'){
                 // GRAFICAR LOGICAS
                 archivo << "<td>\n";
-                archivo << "table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
+                archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
 
                 float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 archivo << "<tr><td align=\"left\"><b> EXTENDIDA </b></td></tr>\n";
@@ -348,13 +376,14 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                     int part_start = LogAct.part_start;
                     int part_size = LogAct.part_s;
 
-                    archivo << "td rowspan='2'>EBR</td>\n";
+                    archivo << "<td rowspan='2'>EBR</td>\n";
                     archivo << "<td>\n";
                     archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
                     float porcentaje = (part_size / (float)mbr_tamano) * 100;
                     archivo << "<tr><td align=\"left\"><b>Logica</b></td></tr>\n";
                     archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "%</b></td></tr>\n";
                     archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
+                    archivo << "</table>\n";
                     archivo << "</td>\n";
                 }
                 archivo << "</tr>\n";
@@ -362,12 +391,16 @@ void Reporte::DiskRep(string id,string pathf, Mount mount)
                 archivo << "</td>\n";
             }else{
                 string aux;
+                archivo<<"\n/*PARTICION PRINCIPAL*/\n";
+                archivo << "<td>\n";
                 archivo << "<table border=\'" + to_string(1) + "\' cellborder=\'" + to_string(0) + "\' cellspacing=\'1\'" + ">\n";
                 float porcentaje = (partitions[i].part_s / (float)mbr_tamano) * 100;
                 archivo << "<tr><td align=\"left\"><b>Principal</b></td></tr>\n";
                 archivo << "<tr><td align=\"left\"><b>" + to_string(porcentaje) + "  % </b></td></tr>\n";
                 archivo << "<tr><td align=\"left\">  del Disco </td></tr>\n";
                 archivo << "</table>\n";
+                archivo << "</td>\n";
+                archivo<<"\n/*FIN PARTICION PRINCIPAL*/\n";
             }
             //POR SI ACASO NO SE LLENO EL DISCO HABRA UN ESPACIO ENTRE LA ULTIMA PARTICION Y EL RESTO DEL DISCO
             if (i == 3)

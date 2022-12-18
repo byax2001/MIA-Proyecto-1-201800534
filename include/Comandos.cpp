@@ -168,7 +168,7 @@ void Comandos::fdisk(char FdiskOption,int s,char u,string path, char tPart,char 
     if(FdiskOption=='c'){
         //s, u, path, t,f
         generatepartition(s,u,path,tPart,fit,name); 
-    }else if(FdiskOption=='c'){
+    }else if(FdiskOption=='a'){
         addpartition(add,u,name,path);
     }else{
         deletepartition(_delete,path,name);
@@ -221,7 +221,6 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
 
         //VERIFICIAR QUE NO HALLA MAS DE DOS EXTENDIDAS
         for(Structs::Partition part : partitions){
-            shared.Pause_press_to_continue();
             if(part.part_type=='e' && t=='e'){
                 shared.handler("FDISK","Error no puede haber mas de dos particiones extendidas");
                 return;
@@ -311,12 +310,9 @@ void Comandos::generatepartition(int s,char u, string p, char t, char f, string 
         }
         //METER NUEVA PARTICION AL MBR  
         disco = adjust(disco, newPartition, between, partitions, used); 
-        cout<<"disco:--------------------------"<<endl;
-        vector<Structs::Partition> partitions2 = getPartitions(disco); 
-        for(Structs::Partition part: partitions2){
-            cout<<"###### Partition :" <<part.part_type<<" name: "<<part.part_name<< " status: "<<part.part_status<<endl;;
-        }
 
+        vector<Structs::Partition> partitions2 = getPartitions(disco); 
+        ImprimirParticiones(partitions2);
 
         FILE *bfile = fopen(p.c_str(), "rb+");
         if (bfile != NULL) {
@@ -458,12 +454,6 @@ Comandos::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, v
                     break;
                 }
             }
-            cout<<endl<<"PARTICIONES ADJUST------------"<<endl;
-            for (auto partition : partitions) {
-                
-                cout<<endl<<"name: "<<partition.part_name<<" tipo: "<<partition.part_type
-                << " fit: "<<partition.part_fit<<" tam: "<<partition.part_s<<endl;
-            }
 
             Structs::Partition aux;
             for (int i = 3; i >= 0; i--) {
@@ -509,7 +499,7 @@ Structs::Partition Comandos::findby(Structs::MBR mbr, string name, string path) 
         if (partition.part_status == '1') {
             if (shared.compare(partition.part_name, name)) {
                 return partition;
-            } else if (partition.part_type == 'E') {
+            } else if (partition.part_type == 'e') {
                 ext = true;
                 extended = partition;
             }
@@ -589,6 +579,7 @@ void Comandos::logic(Structs::Partition partition, Structs::Partition ep, string
 
 //retorna un vector de particiones logicas
 vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p) {
+    
     vector<Structs::EBR> ebrs;
     FILE *file = fopen(p.c_str(), "rb+");
     rewind(file);
@@ -598,13 +589,19 @@ vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p)
     //recorrer el archivo hasta hallar datos ilogicos, ahi no habra nada y sera el fin de las particiones
     int n=0;
     do {
+        n++;
+        if((int)tmp.part_name[0]<=0){ //si la primera letra de el nombre es un char ascii <=0 entonces ya esta leyendo una parte que no es ebr
+                                      //y por lo tanto hay que parar
+            fclose(file); 
+            break;
+        }
         if (!(tmp.part_status == '0' && tmp.part_next == -1)) {
             if (tmp.part_status != '0') {
                 ebrs.push_back(tmp);
             }
             fseek(file, tmp.part_next, SEEK_SET);
             fread(&tmp, sizeof(Structs::EBR), 1, file);
-        } else {
+        }else {
             fclose(file);
             break;
         }
@@ -614,11 +611,15 @@ vector<Structs::EBR> Comandos::getlogics(Structs::Partition partition, string p)
 
 void Comandos::deletepartition(string d, string p, string n) {
     try {
+        //p: path , n: name
         /*EL AUX DIJO QUE SOLO VA A VENIR FULL EL DELETE SIEMPRE
         if (!(shared.compare(d, "fast") || shared.compare(d, "full"))) {
             throw runtime_error("-delete necesita valores específicos");
         }
         */
+                
+        bool fll = false;  //si se logro borrar algo o no
+
         FILE *file = fopen(p.c_str(), "rb+");
         if (file == NULL) {
             throw runtime_error("disco no existente");
@@ -628,8 +629,6 @@ void Comandos::deletepartition(string d, string p, string n) {
         rewind(file);
         fread(&disk, sizeof(Structs::MBR), 1, file);
 
-        findby(disk, n, p);
-
         Structs::Partition partitions[4];
         partitions[0] = disk.mbr_partition_1;
         partitions[1] = disk.mbr_partition_2;
@@ -637,18 +636,14 @@ void Comandos::deletepartition(string d, string p, string n) {
         partitions[3] = disk.mbr_partition_4;
 
         Structs::Partition past;
-        bool fll = false;
+        
         for (int i = 0; i < 4; i++) {
             if (partitions[i].part_status == '1') {
                 if (partitions[i].part_type == 'P') {
                     if (shared.compare(partitions[i].part_name, n)) {
-                       /* if (shared.compare(d, "fast")) {
-                            partitions[i].part_status = '0'; //eliminar particion
-                        } else {*/
                             past = partitions[i];
                             partitions[i] = Structs::Partition();
-                            fll = true;
-                        //}
+                            fll = true;//indica que si se localizo una particion
                         break;
                     }
                 } else {
@@ -662,6 +657,7 @@ void Comandos::deletepartition(string d, string p, string n) {
                         }*/
 
                         past = partitions[i];
+                        partitions[i] = Structs::Partition();
                         int start = partitions[i].part_start;
                         int tam = partitions[i].part_s;
                         char caracter = '\0';
@@ -673,23 +669,34 @@ void Comandos::deletepartition(string d, string p, string n) {
                         {
                             fwrite(&caracter,sizeof(caracter),1,file);
                         }
-                        fll = true;
-                        break; //SI ERA LA EXTENDIDA EL CICLO SE DETIENE ACA
+                        fll = true;//indica que si se localizo una particion
+                        shared.response("FDISK", "partición eliminada correctamente -" + d);
+                        break;
                     }
+                    cout<<endl<<"AAAAAAAAAAAAAAa"<<endl;
                     vector<Structs::EBR> ebrs = getlogics(partitions[i], p);
+                     cout<<endl<<"AAAAAAAAAAAAAAa"<<endl;
                     int count = 0;
                     for (Structs::EBR ebr : ebrs) {
                         if (shared.compare(ebr.part_name, n)) {
                             ebr.part_status = '0';
+                            fll=true; //indica que si se localizo una particion
                         }
                         fseek(file, ebr.part_start, SEEK_SET);
                         fwrite(&ebr, sizeof(Structs::EBR), 1, file);
                         count++;
                     }
-                    shared.response("FDISK", "partición eliminada correctamente -" + d);
-                    return;
+                    if(fll){
+                        shared.response("FDISK", "partición eliminada correctamente -" + d);
+                        break;
+                    } 
                 }
             }
+        }
+        if(!fll){
+            shared.handler("FDISK","No se hallo una particion con dicho nombre");
+            fclose(file);
+            return; 
         }
 
         Structs::Partition aux;
@@ -715,8 +722,9 @@ void Comandos::deletepartition(string d, string p, string n) {
             int num = static_cast<int>(past.part_s / 2);
             fwrite("\0", sizeof("\0"), num, file);
         }
-        shared.response("FDISK", "partición eliminada correctamente -" + d);
         fclose(file);
+        vector<Structs::Partition> partitions2=getPartitions(disk);
+        ImprimirParticiones(partitions2);
     }
     catch (exception &e) {
         shared.handler("FDISK", e.what());
@@ -730,7 +738,7 @@ void Comandos::addpartition(int add, char u, string n, string p) {
         //tamaño en bytes 
         if (u=='b' || u=='k' || u=='m') {
 
-            if (!u=='b') {
+            if (!(u=='b')) {
                 i *= (u=='k') ? 1024 : 1024 * 1024;
             }
         } else {
@@ -821,10 +829,23 @@ void Comandos::addpartition(int add, char u, string n, string p) {
         fwrite(&disk, sizeof(Structs::MBR), 1, file);
         shared.response("FDISK", "la partición se ha aumentado/disminuido correctamente");
         fclose(file);
+
+        vector<Structs::Partition> partitions2=getPartitions(disk);
+        ImprimirParticiones(partitions2);
     }
     catch (exception &e) {
         shared.handler("FDISK", e.what());
         return;
+    }
+
+}
+
+void Comandos::ImprimirParticiones(vector<Structs::Partition> partitions)
+{
+    cout << endl<< "----------ESTADO DE LAS PARTICIONES------------" << endl;
+    for(Structs::Partition part: partitions){
+        cout<<"-Partition :" <<part.part_type<<" name: "<<part.part_name<< " status: "
+        <<part.part_status<< " tam: " << part.part_s<<" fit: " << part.part_fit  <<endl;;
     }
 
 }
