@@ -297,6 +297,8 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
         }
     }else if(comando.compare("exit")==0){
         cout<<"Exit"<<endl;
+    }else if(comando.compare("pause")==0){
+        shared.response("PAUSE","----------------Comando Pause-------------------");
     }else{
         shared.handler("ERROR","Comando no reconocido");
     }
