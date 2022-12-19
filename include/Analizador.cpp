@@ -128,7 +128,7 @@ void Analizador::identificarParametros(string comando, vector<string> parametros
     Comandos cmd;
     string param = "";
 
-    //exec -path=/home/brandon/arch.mia
+    //exec -path=/home/brandon/basico.mia
     //parth12 = 10240  + 1m
     //parth4   = 7680     +500 kbytes
     //mkdisk -s=4000 -u=K -path=/home/brandon/hola2/Disco3.dsk

@@ -763,35 +763,41 @@ void Comandos::addpartition(int add, char u, string n, string p) {
 
         findby(disk, n, p);
 
-        Structs::Partition partitions[4];
-        partitions[0] = disk.mbr_partition_1;
-        partitions[1] = disk.mbr_partition_2;
-        partitions[2] = disk.mbr_partition_3;
-        partitions[3] = disk.mbr_partition_4;
+        Structs::Partition* partitions[4];
+        partitions[0] = &disk.mbr_partition_1;
+        partitions[1] = &disk.mbr_partition_2;
+        partitions[2] = &disk.mbr_partition_3;
+        partitions[3] = &disk.mbr_partition_4;
         
 
         for (int i = 0; i < 4; i++) {
-            if (partitions[i].part_status == '1') {
+            if (partitions[i]->part_status == '1') {
                 //n = name
-                if (shared.compare(partitions[i].part_name, n)) {
+                if (shared.compare(partitions[i]->part_name, n)) {
                     //part_s = tamaño de la particion
                     //si la particion no esta vacia
-                    if ((partitions[i].part_s + (add_tam)) > 0) {
+                    if ((partitions[i]->part_s + (add_tam)) > 0) {
                         //SI LA PARTICION CON EL NOMBRE CORRECTO ESTA ANTES DEL ULTIMO
                         if (i != 3) {
-                            if (partitions[i + 1].part_start != 0) {
+                            if (partitions[i + 1]->part_start != 0) {
                                 if (add_tam > 0) {
-                                    if ((partitions[3].part_s + (add_tam) +partitions[3].part_start) <=
+                                    if ((partitions[3]->part_s + (add_tam) +partitions[3]->part_start) <=
                                     disk.mbr_tamano) {
-                                        partitions[3].part_s += add_tam;
+                                        cout<<endl<<"Name: "<<partitions[i]->part_name<<" Size: "<<partitions[i]->part_s;
+                                        partitions[i]->part_s += add_tam;
+                                        cout<<endl<<"New Size: "<<partitions[i]->part_s<<endl;
+                                        shared.response("FKDISK","Suma exitosa tipo 1");
                                         break;
                                     } else {
                                         throw runtime_error("se sobrepasa el límite");
                                     }
                                 }else{
-                                    if (((partitions[i].part_s + (add_tam) +partitions[i].part_start) >
-                                        partitions[i].part_start)) {
-                                        partitions[i].part_s += add_tam;                                      
+                                    if (((partitions[i]->part_s + (add_tam) +partitions[i]->part_start) >
+                                        partitions[i]->part_start)) {
+                                        cout<<endl<<"Name: "<<partitions[i]->part_name<<" Size: "<<partitions[i]->part_s;
+                                        partitions[i]->part_s += add_tam;
+                                        cout<<endl<<"New Size: "<<partitions[i]->part_s<<endl;
+                                        shared.response("FKDISK","Suma exitosa tipo 2");                                 
                                         break;
                                     } else {
                                         throw runtime_error("Elimina mas espacio del posible");
@@ -805,10 +811,14 @@ void Comandos::addpartition(int add, char u, string n, string p) {
                             // SI LA PARTICION CON EL NOMBRE BUSCADO ES EL ULTIMO DATO
                             if (add_tam > 0)
                             {
-                                if ((partitions[i].part_s + (add_tam) + partitions[i].part_start) <=
+                                if ((partitions[i]->part_s + (add_tam) + partitions[i]->part_start) <=
                                     disk.mbr_tamano)
                                 {
-                                    partitions[3].part_s += add_tam;     
+                                    partitions[3]->part_s += add_tam;
+                                    cout << endl<< "Name: " << partitions[i]->part_name << " Size: " << partitions[i]->part_s;
+                                    partitions[i]->part_s += add_tam;
+                                    cout << endl<< "New Size: " << partitions[i]->part_s << endl;
+                                    shared.response("FKDISK", "Suma exitosa tipo 3");
                                     break;
                                 }
                                 else
@@ -816,34 +826,34 @@ void Comandos::addpartition(int add, char u, string n, string p) {
                                     throw runtime_error("se sobrepasa el límite");
                                 }
                             }else{
-                                if (((partitions[i].part_s + (add_tam) + partitions[i].part_start) >
-                                     partitions[i].part_start)){
-                                    partitions[i].part_s += add_tam;
+                                if (((partitions[i]->part_s + (add_tam) + partitions[i]->part_start) >
+                                    partitions[i]->part_start)){
+                        
+                                    cout<<endl<<"Name: "<<partitions[i]->part_name<<" Size: "<<partitions[i]->part_s;
+                                    partitions[i]->part_s += add_tam;
+                                    cout<<endl<<"New Size: "<<partitions[i]->part_s<<endl;
+                                    shared.response("FKDISK","Suma exitosa tipo 4");  
                                         
                                     break;
                                 }else{
                                     throw runtime_error("Elimina mas espacio del posible");
                                 }
-                                partitions[i].part_s -= add_tam;
                             }
                         }
                     }
                 }
             }
         }
-
-        disk.mbr_partition_1 = partitions[0];
-        disk.mbr_partition_2 = partitions[1];
-        disk.mbr_partition_3 = partitions[2];
-        disk.mbr_partition_4 = partitions[3];
-
+     
+        vector<Structs::Partition> partitions2=getPartitions(disk);
+        ImprimirParticiones(partitions2);
         rewind(file);
         fwrite(&disk, sizeof(Structs::MBR), 1, file);
         shared.response("FDISK", "la partición se ha aumentado/disminuido correctamente");
         fclose(file);
 
-        vector<Structs::Partition> partitions2=getPartitions(disk);
-        ImprimirParticiones(partitions2);
+        //vector<Structs::Partition> partitions2=getPartitions(disk);
+        //ImprimirParticiones(partitions2);
     }
     catch (exception &e) {
         shared.handler("FDISK", e.what());
